@@ -1,0 +1,263 @@
+import React, { useEffect, useRef, useState } from "react";
+
+// ---- CONFIG ----
+const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";
+const GLASS_BOX = {
+  width: 600,
+  height: 600,
+  borderRadius: 18,
+  background: "rgba(15,18,31,0.96)",
+  boxShadow: "0 8px 36px #223c6e68",
+  border: "2px solid #29426fa3",
+  fontFamily: "system-ui, sans-serif",
+  color: "#e9f1fc"
+};
+const ACCENT = "#61a7ff";
+
+function FlexBox({ dir = "column", spacing = 12, align = "start", crossAlign = "center", style = {}, children }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: dir,
+        gap: spacing,
+        alignItems: crossAlign,
+        justifyContent: align,
+        ...style
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---- MAIN APP ----
+export default function App() {
+  // ---- State ----
+  const [view, setView] = useState("search"); // search, list, player
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]); // {id, title, thumb}
+  const [loading, setLoading] = useState(false);
+  const [sel, setSel] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [video, setVideo] = useState(null); // {id, title}
+
+  const inputRef = useRef();
+  const playerRef = useRef();
+
+  // ---- YouTube Search ----
+  async function runSearch(q) {
+    if (!q) return;
+    setLoading(true);
+    setView("list");
+    setResults([]);
+    setSel(0);
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(
+      q
+    )}&key=${YOUTUBE_API_KEY}`;
+    const data = await fetch(url).then((r) => r.json());
+    setResults(
+      data.items.map((v) => ({
+        id: v.id.videoId,
+        title: v.snippet.title,
+        thumb: v.snippet.thumbnails.medium.url
+      }))
+    );
+    setLoading(false);
+  }
+
+  // ---- YouTube IFrame player controls ----
+  function sendPlayerCmd(cmd, ...args) {
+    if (!playerRef.current) return;
+    playerRef.current.contentWindow.postMessage(
+      JSON.stringify({ event: "command", func: cmd, args }),
+      "*"
+    );
+  }
+
+  // ---- Keyboard Nav Layout: matches your SDK FSM ----
+  useEffect(() => {
+    function handleKey(e) {
+      if (view === "search") {
+        if (e.key === "Enter") {
+          runSearch(search || "lofi");
+        } else if (e.key === "ArrowDown") {
+          setView("list");
+          setSel(0);
+          e.preventDefault();
+        }
+      } else if (view === "list") {
+        if (e.key === "ArrowUp") {
+          setSel((i) => (i <= 0 ? results.length - 1 : i - 1));
+          e.preventDefault();
+        } else if (e.key === "ArrowDown") {
+          setSel((i) => (i >= results.length - 1 ? 0 : i + 1));
+          e.preventDefault();
+        } else if (e.key === "ArrowLeft") {
+          setView("search");
+        } else if (e.key === "Enter") {
+          setVideo(results[sel]);
+          setView("player");
+          setPlaying(true);
+        }
+      } else if (view === "player") {
+        if (e.key === "Enter") {
+          setPlaying((p) => {
+            sendPlayerCmd(p ? "pauseVideo" : "playVideo");
+            return !p;
+          });
+        } else if (e.key === "ArrowLeft") {
+          sendPlayerCmd("seekBy", -10);
+        } else if (e.key === "ArrowRight") {
+          sendPlayerCmd("seekBy", 10);
+        } else if (e.key === "ArrowDown") {
+          setView("list");
+          setPlaying(false);
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+    // eslint-disable-next-line
+  }, [view, sel, search, results]);
+
+  // Auto-focus the input in search mode
+  useEffect(() => {
+    if (view === "search") inputRef.current?.focus();
+  }, [view]);
+
+  // ---- RENDER ----
+  return (
+    <div style={GLASS_BOX}>
+      {/* Header */}
+      <FlexBox dir="row" spacing={14} crossAlign="center" style={{ padding: 20, background: "rgba(26,30,43,0.77)" }}>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YT" height={32} style={{ filter: "brightness(1.25)" }} />
+        <span style={{ fontSize: 23, color: ACCENT, fontWeight: 700, flex: 1, textShadow: "0 3px 20px #3261b8" }}>
+          On Glass
+        </span>
+      </FlexBox>
+      {/* Search Box */}
+      <FlexBox dir="column" align="start" spacing={7} style={{ padding: "0 22px 16px 22px" }}>
+        <input
+          ref={inputRef}
+          value={search}
+          autoFocus
+          disabled={view !== "search"}
+          tabIndex={-1}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search videos..."
+          style={{
+            fontSize: 19,
+            background: "#232b3d",
+            color: "#dbe9ff",
+            border: view === "search" ? `2px solid ${ACCENT}` : "2px solid #222a",
+            borderRadius: 9,
+            padding: "8px 16px",
+            outline: "none",
+            fontWeight: 500,
+            marginTop: 8,
+            width: 380,
+            boxShadow: view === "search" ? `0 0 0 2px ${ACCENT}44` : undefined,
+            letterSpacing: 0.01
+          }}
+        />
+        <span style={{ color: "#6fa7ef", fontSize: 14 }}>
+          [Enter]=Search &nbsp; [↓]=Results &nbsp; [Tab/Mouse disabled]
+        </span>
+      </FlexBox>
+      {/* Results List */}
+      <FlexBox dir="column" align="start" spacing={6} style={{
+        margin: 0,
+        minHeight: 180,
+        maxHeight: 220,
+        overflowY: (view === "list" && results.length) ? "auto" : "hidden",
+        padding: "0 18px"
+      }}>
+        {loading && (
+          <TextLine text="Loading…" />
+        )}
+        {!loading && !results.length && <TextLine text="No results yet" color="#57617b" />}
+        {!loading && results.map((v, i) => (
+          <FlexBox key={v.id} dir="row" spacing={14} crossAlign="center"
+            style={{
+              minHeight: 47,
+              background: view === "list" && sel === i ? ACCENT : "#232a34ee",
+              color: view === "list" && sel === i ? "#fff" : "#eaf4ff",
+              borderRadius: 12, padding: "6px 12px",
+              cursor: "pointer", fontWeight: 500, boxShadow: view === "list" && sel === i ? "0 3px 15px #648cf678" : undefined,
+              outline: view === "list" && sel === i ? `2px solid #fff8` : undefined
+            }}>
+            <img src={v.thumb} alt="" height={38} width={67}
+              style={{
+                borderRadius: 8,
+                filter: view === "list" && sel === i ? "brightness(1.1)" : "brightness(0.80)",
+              }} />
+            <span style={{
+              maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis"
+            }}>{v.title}</span>
+          </FlexBox>
+        ))}
+      </FlexBox>
+      {/* Player Overlay */}
+      {view === "player" && video && (
+        <div style={{
+          pointerEvents: "all",
+          position: "absolute",
+          zIndex: 99,
+          left: 0, top: 0, width: 600, height: 600,
+          background: "rgba(12,18,32,0.985)",
+          borderRadius: 17,
+          display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"
+        }}>
+          <FlexBox dir="column" spacing={18} style={{ padding: 9, width: 560 }}>
+            <iframe
+              ref={playerRef}
+              title={video.title}
+              width={528}
+              height={297}
+              style={{
+                border: `2px solid ${playing ? ACCENT : "#334"}`,
+                borderRadius: 15,
+                background: "#111",
+                margin: "auto"
+              }}
+              src={`https://www.youtube.com/embed/${video.id}?autoplay=1&controls=0&enablejsapi=1`}
+              frameBorder={0}
+              allow="autoplay; encrypted-media"
+            />
+            <span style={{ color: "#fff", fontSize: 17, fontWeight: 700, textShadow: "0 1px 7px #61a1fd55" }}>
+              {video.title}
+            </span>
+            <FlexBox dir="row" spacing={20} crossAlign="center" style={{ margin: "auto", color: "#80caff", fontSize: 15 }}>
+              <Icon name="play-pause" /> [Enter]
+              <Icon name="rewind" /> [←]
+              <Icon name="ffwd" /> [→]
+              <Icon name="close" /> [↓]
+            </FlexBox>
+          </FlexBox>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Minor components -----------
+function TextLine({ text, color = "#98b4e9" }) {
+  return <span style={{ color, padding: "12px 6px", fontSize: 17, fontWeight: 500, letterSpacing: 0.01 }}>{text}</span>;
+}
+function Icon({ name }) {
+  // Minimalist SVG icons as in your SDK
+  if (name === "play-pause")
+    return <svg width="20" height="20" viewBox="0 0 20 20" style={{ verticalAlign: "middle", marginRight: 7 }}>
+      <rect x="3" y="3" width="4" height="14" fill={ACCENT} rx="2" />
+      <rect x="13" y="3" width="4" height="14" fill={ACCENT} rx="2" />
+      <polygon points="10,4 16,10 10,16" fill={ACCENT} stroke="none" />
+    </svg>;
+  if (name === "rewind")
+    return <svg width="21" height="21" viewBox="0 0 21 21" style={{ verticalAlign: "middle", marginRight: 6 }}><polygon points="9,10.5 17,17 17,4" fill={ACCENT} /><polygon points="4,10.5 12,17 12,4" fill={ACCENT} /></svg>;
+  if (name === "ffwd")
+    return <svg width="21" height="21" viewBox="0 0 21 21" style={{ verticalAlign: "middle", marginRight: 6 }}><polygon points="12,10.5 4,4 4,17" fill={ACCENT} /><polygon points="17,10.5 9,4 9,17" fill={ACCENT} /></svg>;
+  if (name === "close")
+    return <svg width="19" height="19" viewBox="0 0 20 20" style={{ verticalAlign: "middle", marginRight: 5 }}><line x1="5" y1="5" x2="15" y2="15" stroke={ACCENT} strokeWidth="2.4" /><line x1="15" y1="5" x2="5" y2="15" stroke={ACCENT} strokeWidth="2.4" /></svg>;
+  return null;
+}
