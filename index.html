@@ -90,9 +90,15 @@ async function load(t){
   if(t==='search'){showKB();return}
 
   let url='';
-  if(t==='home') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&q=a&key=${KEY}`;
-  if(t==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=20&q=shorts&key=${KEY}`;
-  if(t==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=20&q=live&key=${KEY}`;
+  // HOME: random US latest videos - refreshes every tap
+  if(t==='home'){
+    const terms=['music','news','gaming','sports','comedy','trailer','tech','vlog','live','trending'];
+    const q=terms[Math.floor(Math.random()*terms.length)];
+    url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&regionCode=US&q=${q}&key=${KEY}`;
+  }
+  // SHORTS: latest US only shorts - refreshes every tap
+  if(t==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;
+  if(t==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=20&regionCode=US&q=live&key=${KEY}`;
 
   let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){data=[{id:'dQw4w9WgXcQ',t:'Rick Astley - Never Gonna Give You Up',c:'Rick Astley'},{id:'9bZkp7q19f0',t:'PSY - GANGNAM STYLE',c:'officialpsy'},{id:'jNQXAC9IVRw',t:'Me at the zoo',c:'jawed'}]}
   videos=data;
@@ -121,6 +127,9 @@ function showKB(){
   $('#search').classList.add('show');
   $('#list').style.display='none';
   const kb=$('#kb');kb.innerHTML='';$('#q').value='';
+  // BACK BUTTON ADDED
+  const back=document.createElement('button');back.className='k focus';back.style.gridColumn='span 10';back.style.background='#333';back.textContent='← Back to Home';back.onclick=()=>{$('#search').classList.remove('show');$('#list').style.display='block';load('home')};kb.appendChild(back);
+
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').forEach(ch=>{
     const b=document.createElement('button');b.className='k focus';b.textContent=ch;b.onclick=()=>$('#q').value+=ch;kb.appendChild(b);
   });
@@ -132,7 +141,7 @@ function showKB(){
   mode='kb';fi=0;foc();
 }
 async function search(q){
-  const url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(q)}&key=${KEY}`;
+  const url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&regionCode=US&q=${encodeURIComponent(q)}&key=${KEY}`;
   let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){}
   videos=data;const L=$('#list');L.innerHTML='';
   data.forEach((v,i)=>{const d=document.createElement('div');d.className='card focus';d.innerHTML=`<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="t">${v.t}</div><div class="c">${v.c}</div></div>`;d.onclick=()=>openV(i);L.appendChild(d)});
@@ -154,7 +163,7 @@ $('#bfs').onclick=()=>{
 // Tabs
 $$('.tab').forEach(t=>t.onclick=()=>load(t.dataset.t));
 
-// D-pad - FIXED for up/down/left/right
+// D-pad
 document.addEventListener('keydown',e=>{
   const k=e.key;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){
