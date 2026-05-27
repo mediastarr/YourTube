@@ -201,11 +201,16 @@ $('#bback').onclick=closeV;
 $('#bplay').onclick=()=>{const s=player.getPlayerState();s===1?player.pauseVideo():player.playVideo()};
 $('#brew').onclick=()=>player.seekTo(player.getCurrentTime()-10,true);
 $('#bfwd').onclick=()=>player.seekTo(player.getCurrentTime()+10,true);
+// FULLSCREEN - hides header + all tabs
 $('#bfs').onclick=()=>{
-  const yt=$('#yt');const fs=yt.style.height==='552px';
-  yt.style.height=fs?'340px':'552px';
-  $('.bar').style.display=fs?'flex':'none';
-  $('.meta').style.display=fs?'block':'none';
+  const yt=$('#yt');
+  const fs = yt.style.height==='600px';
+  yt.style.height = fs ? '340px' : '600px';
+  $('.bar').style.display = fs ? 'flex' : 'none';
+  $('.meta').style.display = fs ? 'block' : 'none';
+  $('.header').style.display = fs ? 'flex' : 'none';
+  $('.tabs').style.display = fs ? 'flex' : 'none';
+  $('#player').style.inset = fs ? '84px 0 0' : '0 0 0';
 };
 
 $$('.tab').forEach(t=>t.onclick=()=>load(t.dataset.t));
