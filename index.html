@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Herald for YouTube</title>
+<meta name="viewport" content="width=600, initial-scale=1">
+
+<!-- Meta Ray-Ban Display / PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none!important; }
+ .app { width: 600px; height: 600px; background: #000; color: #fff; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+  header { height: 70px; display: flex; align-items: center; padding: 0 24px; border-bottom: 2px solid #1a1a1a; flex-shrink: 0; }
+ .logo { display: flex; align-items: center; gap: 14px; font-size: 38px; font-weight: 800; letter-spacing: -0.5px; }
+ .logo-icon { color: #ff0000; font-size: 34px; line-height: 1; transform: translateY(-1px); }
+ .subtitle { margin-left: auto; font-size: 24px; color: #999; font-weight: 600; }
+
+ .search-wrap { padding: 18px 20px 14px; flex-shrink: 0; }
+  #search { width: 100%; height: 68px; background: #0a0a0a; border: 3px solid #2a2a2a; border-radius: 14px; color: #fff; font-size: 28px; padding: 0 22px; outline: none; font-weight: 500; }
+  #search.focused { border-color: #FFD400; box-shadow: 0 0 18px rgba(255,212,0,0.6), 0 0 0 3px rgba(255,212,0,0.25); }
+
+  main { flex: 1; overflow: hidden; position: relative; }
+  #loading, #error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #aaa; font-weight: 600; padding: 20px; text-align: center; }
+  #error { color: #ff3b30; }
+
+  #listView { height: 100%; overflow-y: auto; padding: 0 14px; scrollbar-width: thin; }
+  #listView::-webkit-scrollbar { width: 6px; }
+  #listView::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  #videoList { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 24px; }
+
+ .video-item { display: flex; gap: 18px; height: 96px; padding: 12px; background: #050505; border: 3px solid #1c1c1c; border-radius: 14px; }
+ .video-item.focused { border-color: #FFD400; box-shadow: 0 0 20px rgba(255,212,0,0.55), 0 0 0 4px rgba(255,212,0,0.2); background: #0f0f0f; }
+ .video-thumb { width: 120px; height: 68px; flex-shrink: 0; background: #111; border-radius: 8px; overflow: hidden; margin-top: 1px; }
+ .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+ .video-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+ .video-title { font-size: 26px; line-height: 1.18; font-weight: 700; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+ .video-channel { font-size: 24px; color: #9a9a9a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+
+  #detailView { height: 100%; overflow-y: auto; padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 16px; }
+  #detailView::-webkit-scrollbar { width: 6px; }
+  #detailView::-webkit-scrollbar-thumb { background: #333; }
+ .detail-thumb { width: 100%; height: 252px; background: #111; border-radius: 14px; overflow: hidden; flex-shrink: 0; border: 2px solid #222; }
+ .detail-thumb img { width: 100%; height: 100%; object-fit: cover; }
+ .detail-title { font-size: 32px; font-weight: 800; line-height: 1.22; }
+ .detail-channel { font-size: 24px; color: #aaa; font-weight: 600; margin-top: -4px; }
+ .detail-desc { font-size: 24px; line-height: 1.45; color: #d0d0d0; max-height: 148px; overflow-y: auto; padding-right: 8px; font-weight: 500; }
+ .detail-desc::-webkit-scrollbar { width: 5px; }
+ .detail-desc::-webkit-scrollbar-thumb { background: #333; }
+ .detail-actions { display: flex; gap: 16px; margin-top: auto; padding-top: 8px; }
+ .btn { flex: 1; height: 68px; background: #141414; border: 3px solid #2e2e2e; border-radius: 14px; color: #fff; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; user-select: none; }
+ .btn.focused { border-color: #FFD400; box-shadow: 0 0 20px rgba(255,212,0,0.6), 0 0 0 4px rgba(255,212,0,0.2); background: #1c1c1c; }
+ .btn.primary { background: #ff0000; border-color: #ff0000; color: #fff; }
+ .btn.primary.focused { border-color: #FFD400; box-shadow: 0 0 22px rgba(255,212,0,0.75), 0 0 0 4px rgba(255,212,0,0.25); }
+
+  footer { height: 54px; display: flex; align-items: center; justify-content: center; gap: 12px; border-top: 2px solid #1a1a1a; font-size: 22px; color: #888; flex-shrink: 0; padding: 0 14px; font-weight: 600; white-space: nowrap; }
+  footer.dot { width: 13px; height: 13px; background: #00e676; border-radius: 50%; box-shadow: 0 0 10px #00e676; flex-shrink: 0; }
+
+ .focused { outline: none!important; }
+  input, button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="Herald for YouTube">
+  <header>
+    <div class="logo">
+      <span class="logo-icon">▶</span>
+      <span>Herald</span>
+    </div>
+    <div class="subtitle">for YouTube</div>
+  </header>
+
+  <div class="search-wrap">
+    <input id="search" class="focusable" type="text" value="tech reviews" autocomplete="off" spellcheck="false" aria-label="Search YouTube">
+  </div>
+
+  <main id="main">
+    <div id="loading">Loading…</div>
+    <div id="error" hidden></div>
+
+    <div id="listView" hidden>
+      <div id="videoList" role="list"></div>
+    </div>
+
+    <div id="detailView" hidden>
+      <div class="detail-thumb"><img id="detailImg" alt=""></div>
+      <div id="detailTitle" class="detail-title"></div>
+      <div id="detailChannel" class="detail-channel"></div>
+      <div id="detailDesc" class="detail-desc"></div>
+      <div class="detail-actions">
+        <button id="watchBtn" class="btn primary focusable">Watch on YouTube</button>
+        <button id="backBtn" class="btn focusable">Back</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>D-Pad: Navigate • OK: Select</span>
+    <span class="dot" aria-hidden="true"></span>
+    <span>Neural Band Ready</span>
+  </footer>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo';
+
+const DEMO_VIDEOS = [
+  {
+    id: 'BxV14h0kFs0',
+    snippet: {
+      title: 'Meta Ray-Ban Display Glasses - First Look & Hands On',
+      channelTitle: 'Meta',
+      description: 'Introducing the next generation of Meta Ray-Ban smart glasses with built-in display. See messages, navigation, and AI assistance right in your lens.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/BxV14h0kFs0/mqdefault.jpg' } }
+    }
+  },
+  {
+    id: 'L_h8p3-VWsE',
+    snippet: {
+      title: 'Ray-Ban Meta Smart Glasses Review: The AI is Actually Useful',
+      channelTitle: 'MKBHD',
+      description: 'The new Ray-Ban Meta with display changes everything. Live translation, camera upgrades, better audio, and Meta AI that sees what you see.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/L_h8p3-VWsE/mqdefault.jpg' } }
+    }
+  },
+  {
+    id: '8bN4Tp0q90E',
+    snippet: {
+      title: 'Tech Reviews: Best Smart Glasses of 2025 Ranked',
+      channelTitle: 'The Verge',
+      description: 'We tested Meta Ray-Ban Display, Xreal Air 2 Ultra, and Rokid AR Joy vs Apple Vision Air.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/8bN4Tp0q90E/mqdefault.jpg' } }
+    }
+  },
+  {
+    id: '5WCTnZRE9lw',
+    snippet: {
+      title: 'Living With Display Glasses for 30 Days - What Changed',
+      channelTitle: 'iJustine',
+      description: 'Thirty days with Meta Ray-Ban Displays. Navigation without pulling out my phone, discreet photos and videos, live captions.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/5WCTnZRE9lw/mqdefault.jpg' } }
+    }
+  },
+  {
+    id: 'uYl6OoSARVg',
+    snippet: {
+      title: 'Meta Connect 2024: Ray-Ban Display & Neural Band Demo',
+      channelTitle: 'Meta Developers',
+      description: 'Full keynote reveal of the Ray-Ban Meta Display platform.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/uYl6OoSARVg/mqdefault.jpg' } }
+    }
+  },
+  {
+    id: 'h8QlvbNC41I',
+    snippet: {
+      title: 'Neural Band Ready: No Touch Control Tested',
+      channelTitle: 'Tech Reviews Daily',
+      description: 'Pinch to select, swipe to scroll, double-pinch for back. We test Meta\'s neural band EMG control.',
+      thumbnails: { medium: { url: 'https://i.ytimg.com/vi/h8QlvbNC41I/mqdefault.jpg' } }
+    }
+  }
+];
+
+const searchInput = document.getElementById('search');
+const loadingEl = document.getElementById('loading');
+const errorEl = document.getElementById('error');
+const listView = document.getElementById('listView');
+const videoList = document.getElementById('videoList');
+const detailView = document.getElementById('detailView');
+const detailImg = document.getElementById('detailImg');
+const detailTitle = document.getElementById('detailTitle');
+const detailChannel = document.getElementById('detailChannel');
+const detailDesc = document.getElementById('detailDesc');
+const watchBtn = document.getElementById('watchBtn');
+const backBtn = document.getElementById('backBtn');
+
+let focusables = [];
+let currentFocusIndex = 0;
+let currentVideos = [];
+let currentDetailId = null;
+let currentView = 'list';
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m])); }
+
+function setLoading(on){
+  loadingEl.hidden =!on;
+  listView.hidden = on || currentView!== 'list';
+  detailView.hidden = currentView!== 'detail';
+  errorEl.hidden = true;
+}
+
+function updateFocusables(){
+  focusables = [];
+  focusables.push(searchInput);
+  if(currentView === 'list'){
+    videoList.querySelectorAll('.video-item').forEach(v=>focusables.push(v));
+  } else {
+    focusables.push(watchBtn, backBtn);
+  }
+}
+
+function setFocus(idx){
+  focusables.forEach(el=>el.classList.remove('focused'));
+  currentFocusIndex = Math.max(0, Math.min(idx, focusables.length-1));
+  const el = focusables[currentFocusIndex];
+  if(!el) return;
+  el.classList.add('focused');
+  try{ el.focus({preventScroll:true}); }catch{}
+  if(el.scrollIntoView) el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+
+function renderList(videos){
+  currentVideos = videos;
+  videoList.innerHTML = '';
+  videos.forEach(v=>{
+    const item = document.createElement('div');
+    item.className = 'video-item focusable';
+    item.tabIndex = -1;
+    item.dataset.id = v.id;
+    item.setAttribute('role','listitem');
+    const thumb = v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url || '';
+    item.innerHTML = `
+      <div class="video-thumb"><img src="${thumb}" alt="" loading="lazy"></div>
+      <div class="video-info">
+        <div class="video-title">${esc(v.snippet.title)}</div>
+        <div class="video-channel">${esc(v.snippet.channelTitle)}</div>
+      </div>`;
+    videoList.appendChild(item);
+  });
+  currentView = 'list';
+  listView.hidden = false;
+  detailView.hidden = true;
+  updateFocusables();
+  setFocus(focusables.length>1? 1 : 0);
+}
+
+function openDetail(video){
+  currentDetailId = video.id;
+  detailImg.src = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+  detailImg.onerror = ()=>{ detailImg.src = video.snippet.thumbnails?.medium?.url || ''; };
+  detailTitle.textContent = video.snippet.title;
+  detailChannel.textContent = video.snippet.channelTitle;
+  detailDesc.textContent = video.snippet.description || 'No description available.';
+  currentView = 'detail';
+  listView.hidden = true;
+  detailView.hidden = false;
+  detailView.scrollTop = 0;
+  updateFocusables();
+  setFocus(1);
+}
+
+function closeDetail(){
+  currentView = 'list';
+  detailView.hidden = true;
+  listView.hidden = false;
+  updateFocusables();
+  setFocus(1);
+}
+
+async function loadPopular(){
+  setLoading(true);
+  try{
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=US&maxResults=12&key=${API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const items = (data.items||[]).map(it=>({id: it.id, snippet: it.snippet}));
+    if(items.length===0) throw new Error('No videos');
+    renderList(items);
+  }catch(e){
+    renderList(DEMO_VIDEOS);
+  }finally{
+    setLoading(false);
+  }
+}
+
+async function searchVideos(query){
+  setLoading(true);
+  try{
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Search failed');
+    const data = await res.json();
+    const items = (data.items||[]).map(it=>({id: it.id.videoId, snippet: it.snippet})).filter(v=>v.id);
+    if(items.length===0) throw new Error('Empty');
+    renderList(items);
+  }catch(e){
+    const q = query.toLowerCase();
+    const filtered = DEMO_VIDEOS.filter(v=>
+      v.snippet.title.toLowerCase().includes(q) ||
+      v.snippet.channelTitle.toLowerCase().includes(q)
+    );
+    renderList(filtered.length? filtered : DEMO_VIDEOS);
+  }finally{
+    setLoading(false);
+  }
+}
+
+function handleEnter(){
+  const el = focusables[currentFocusIndex];
+  if(!el) return;
+  if(el === searchInput){
+    const q = searchInput.value.trim();
+    if(q) searchVideos(q);
+  } else if(el.classList.contains('video-item')){
+    const id = el.dataset.id;
+    const video = currentVideos.find(v=>v.id===id);
+    if(video) openDetail(video);
+  } else if(el === watchBtn){
+    if(currentDetailId) window.open(`https://youtube.com/watch?v=${currentDetailId}`, '_blank', 'noopener');
+  } else if(el === backBtn){
+    closeDetail();
+  }
+}
+
+document.addEventListener('keydown', (e)=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter'].includes(e.key)){
+    e.preventDefault();
+  }
+  switch(e.key){
+    case 'ArrowDown': setFocus(currentFocusIndex + 1); break;
+    case 'ArrowUp': setFocus(currentFocusIndex - 1); break;
+    case 'Enter': handleEnter(); break;
+  }
+});
+
+searchInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); handleEnter(); }
+});
+
+watchBtn.addEventListener('click', ()=>window.open(`https://youtube.com/watch?v=${currentDetailId}`, '_blank'));
+backBtn.addEventListener('click', closeDetail);
+videoList.addEventListener('click', (e)=>{
+  const item = e.target.closest('.video-item');
+  if(item){ const video = currentVideos.find(v=>v.id===item.dataset.id); if(video) openDetail(video); }
+});
+
+window.addEventListener('load', ()=>{
+  updateFocusables();
+  setFocus(0);
+  loadPopular();
+});
+</script>
+</body>
+</html>
