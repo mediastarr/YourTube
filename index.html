@@ -2,168 +2,420 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=600, initial-scale=1">
-<title>Herald • YouTube for Ray-Ban Display</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
+<meta name="viewport" content="width=600, user-scalable=no">
+<title>Meta Ray-Ban Display</title>
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiUmF5LUJhbiBEaXNwbGF5Iiwic2hvcnRfbmFtZSI6IlJheUJhbiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwMDAwMDAiLCJ0aGVtZV9jb2xvciI6IiMwMDAwMDAifQ==">
 <style>
-:root{--yellow:#FFD400}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:#111}
-body{display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-.app{width:600px;height:600px;background:#000;color:#fff;display:flex;flex-direction:column;position:relative;overflow:hidden;border:1px solid #222}
-header{height:56px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #1a1a1a;flex-shrink:0}
-.logo{font-weight:900;font-size:22px;letter-spacing:.5px}
-.logo span{color:var(--yellow)}
-.tabbar{display:flex;gap:2px;padding:0 6px;border-bottom:1px solid #1a1a1a;height:48px;align-items:center;flex-shrink:0;background:#000}
-.tab{background:transparent;border:none;color:#999;font-size:17px;padding:10px 9px;font-weight:700;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;letter-spacing:.2px}
-.tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
-#view{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:#000}
-#view::-webkit-scrollbar{width:0}
-.section-title{padding:14px 16px 8px;font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:#888;font-weight:800}
-.list{padding:0 8px 16px}
-.video-item{width:100%;display:flex;gap:12px;padding:10px;background:#080808;border:2px solid #141414;border-radius:14px;margin-bottom:10px;text-align:left;color:inherit;cursor:pointer;transition:background.15s,border-color.15s}
-.video-item img{width:168px;height:94px;object-fit:cover;border-radius:9px;background:#222;flex-shrink:0}
-.video-item.meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.video-item.title{font-size:18px;line-height:1.28;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
-.video-item.channel{font-size:14px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.video-item.focused{border-color:var(--yellow);background:#141414}
-.search-box{padding:16px;display:flex;gap:8px}
-#searchInput{flex:1;background:#0d0d0d;border:2px solid #2a2a2a;color:#fff;font-size:21px;padding:13px 14px;border-radius:12px;font-weight:600}
-#searchInput.focused{border-color:var(--yellow)}
-.search-btn{background:var(--yellow);color:#000;border:none;font-weight:900;font-size:18px;padding:0 22px;border-radius:12px;cursor:pointer;letter-spacing:.3px}
-.search-btn.focused{filter:brightness(1.1)}
-.empty{text-align:center;padding:90px 20px;color:#666;font-size:20px;font-weight:600}
-.account{display:flex;flex-direction:column;align-items:center;padding-top:64px;gap:12px}
-.avatar{width:100px;height:100px;border-radius:50%;background:#141414;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:var(--yellow);border:3px solid #2a2a2a}
-.name{font-size:26px;font-weight:800;margin-top:8px}
-.email{color:#999;font-size:16px}
-.signout{margin-top:26px;background:#111;border:2px solid #2a2a2a;color:#fff;padding:13px 30px;border-radius:12px;font-size:18px;font-weight:700}
-.signout.focused{border-color:var(--yellow);background:#1a1a1a}
-#detail{position:absolute;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#detail.open{display:flex}
-.detail-hero{position:relative;width:100%;height:280px;background:#000;flex-shrink:0}
-.detail-hero img{width:100%;height:100%;object-fit:cover}
-.detail-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,#000 0%,rgba(0,0,0,.6) 30%,transparent 70%)}
-.detail-body{padding:20px;flex:1;overflow:auto}
-.detail-title{font-size:25px;font-weight:900;line-height:1.25;margin-bottom:10px}
-.detail-channel{color:#aaa;font-size:16px;margin-bottom:22px;font-weight:600}
-.detail-actions{display:flex;gap:10px}
-.detail-btn{background:#141414;border:2px solid #2a2a2a;color:#fff;padding:13px 20px;border-radius:12px;font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px;cursor:pointer}
-.detail-btn.primary{background:var(--yellow);color:#000;border-color:var(--yellow)}
-.detail-btn.focused{border-color:var(--yellow)}
-#quickmenu{position:absolute;inset:0;background:rgba(0,0,0,.92);z-index:50;display:flex;align-items:center;justify-content:center}
-#quickmenu.hidden{display:none}
-.menu{width:80%;background:#000;border:3px solid var(--yellow);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(255,212,0,.2)}
-.menu-title{text-align:center;font-weight:900;font-size:19px;margin-bottom:6px;color:var(--yellow);letter-spacing:1.5px}
-.menu-btn{background:#0a0a0a;border:2px solid #2e2e2e;color:#fff;padding:15px;border-radius:12px;font-size:19px;font-weight:700;text-align:center;cursor:pointer}
-.menu-btn.focused{border-color:var(--yellow);background:#171717}
-footer{height:30px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;border-top:1px solid #141414;flex-shrink:0;letter-spacing:.5px;background:#000}
-.focusable{outline:none;position:relative}
-.focusable.focused{box-shadow:0 0 0 3px #000,0 0 0 5px var(--yellow);z-index:5}
-.tab.focusable.focused{box-shadow:inset 0 -3px 0 var(--yellow),0 0 0 3px #000,0 0 0 5px var(--yellow);border-radius:6px 6px 0 0}
-/* Contrast */
-.app.contrast{background:#fff;color:#000}
-.app.contrast.tabbar,.app.contrast header,.app.contrast footer,.app.contrast #view{background:#fff;border-color:#ddd}
-.app.contrast.tab{color:#555}
-.app.contrast.tab.active{color:#000;border-bottom-color:#000}
-.app.contrast.section-title{color:#666}
-.app.contrast.video-item{background:#f7f7f7;border-color:#e6e6e6}
-.app.contrast.video-item.focused{background:#fff;border-color:#000}
-.app.contrast.video-item.channel{color:#555}
-.app.contrast #searchInput{background:#fff;border-color:#bbb;color:#000}
-.app.contrast.search-btn{background:#000;color:var(--yellow)}
-.app.contrast.empty{color:#777}
-.app.contrast.avatar{background:#f0f0f0;border-color:#ccc;color:#000}
-.app.contrast.signout{background:#fff;border-color:#000;color:#000}
-.app.contrast.signout.focused{background:#f5f5f5}
-.app.contrast #detail{background:#fff}
-.app.contrast.detail-hero::after{background:linear-gradient(to top,#fff 0%,rgba(255,255,255,.7) 30%,transparent 70%)}
-.app.contrast.detail-btn{background:#f0f0f0;border-color:#ccc;color:#000}
-.app.contrast.detail-btn.primary{background:#000;color:var(--yellow);border-color:#000}
-.app.contrast.menu{background:#fff;border-color:#000;box-shadow:0 0 30px rgba(0,0,0,.15)}
-.app.contrast.menu-btn{background:#f7f7f7;border-color:#ccc;color:#000}
-.app.contrast.menu-btn.focused{border-color:#000;background:#fff}
-.app.contrast.menu-title{color:#000}
-.app.contrast.focusable.focused{box-shadow:0 0 0 3px #fff,0 0 0 5px #000}
-.app.contrast.tab.focusable.focused{box-shadow:inset 0 -3px 0 #000,0 0 0 3px #fff,0 0 0 5px #000}
+  html { background:#111; height:100%; display:flex; align-items:center; justify-content:center; }
+  body { width:600px; height:600px; margin:0; background:#000; color:#fff; font-family: Roboto, Arial, sans-serif; overflow:hidden; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+ .app { width:600px; height:600px; display:flex; flex-direction:column; background:#000; position:relative; }
+ .tabbar { display:flex; height:52px; background:#0a0a0a; border-bottom:1px solid #1a1a1a; flex-shrink:0; }
+ .tabbar.tab { flex:1; background:none; border:none; color:#888; font-size:15px; font-weight:500; position:relative; }
+ .tabbar.tab.active { color:#fff; }
+ .tabbar.tab.active::after { content:''; position:absolute; bottom:0; left:20%; right:20%; height:2px; background:#ff0000; border-radius:2px; }
+ .view { flex:1; overflow-y:auto; overflow-x:hidden; background:#000; position:relative; }
+ .view::-webkit-scrollbar { width:0; }
+ .video-list { padding:8px; display:flex; flex-direction:column; gap:10px; }
+ .video-item { display:flex; gap:10px; background:#0d0d0d; border:none; padding:8px; border-radius:12px; text-align:left; width:100%; }
+ .video-item.thumb { width:180px; height:101px; background:#1a1a1a; border-radius:8px; object-fit:cover; flex-shrink:0; }
+ .video-item.info { flex:1; min-width:0; }
+ .video-item.title { font-size:15px; line-height:1.3; color:#fff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+ .video-item.meta { font-size:12px; color:#aaa; margin-top:6px; }
+ .focusable { border:2px solid transparent; border-radius:10px; outline:none; transition:transform.08s; }
+ .focusable.focused { border-color:#ffeb3b!important; box-shadow:0 0 0 2px #000, 0 0 0 4px #ffeb3b, 0 0 16px rgba(255,235,59,.6); background:#1a1a1a!important; color:#ffeb3b!important; transform:scale(1.01); z-index:2; }
+ .tab.focusable.focused { border-radius:0; box-shadow:inset 0 -4px 0 #ffeb3b; background:#141414!important; }
+ .detail { padding:20px; display:flex; flex-direction:column; align-items:center; gap:16px; }
+ .detail.hero { width:560px; height:315px; background:#111; border-radius:16px; object-fit:cover; }
+ .detail h2 { font-size:20px; text-align:center; line-height:1.3; max-width:540px; }
+ .detail.channel { color:#aaa; font-size:14px; }
+ .btn { background:#1f1f1f; color:#fff; border:none; padding:14px 28px; border-radius:28px; font-size:17px; font-weight:600; min-width:200px; }
+ .btn.primary { background:#ff0000; color:#fff; }
+ .quick-menu { position:absolute; top:54px; right:8px; background:#141414; border:1px solid #2a2a2a; border-radius:14px; padding:8px; width:220px; z-index:50; display:none; flex-direction:column; gap:6px; box-shadow:0 12px 32px rgba(0,0,0,.9); }
+ .quick-menu.open { display:flex; }
+ .quick-menu button { background:#1f1f1f; border:none; color:#fff; padding:12px 14px; text-align:left; border-radius:10px; font-size:15px; }
+ .search-box { display:flex; gap:8px; padding:12px; position:sticky; top:0; background:#000; z-index:5; }
+ .search-box input { flex:1; background:#131313; border:1px solid #2a2a2a; color:#fff; padding:12px 16px; border-radius:24px; font-size:15px; }
+ .search-box input.focused { background:#1a1a1a!important; }
+ .grid-shorts { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px; }
+ .short-item { aspect-ratio:9/16; background:#0d0d0d; border:none; padding:0; border-radius:12px; overflow:hidden; position:relative; }
+ .short-item img { width:100%; height:100%; object-fit:cover; }
+ .short-item.title { position:absolute; bottom:0; left:0; right:0; padding:8px; font-size:12px; background:linear-gradient(transparent, rgba(0,0,0,.9)); text-align:left; }
+ .center { display:flex; align-items:center; justify-content:center; height:100%; color:#666; flex-direction:column; gap:12px; }
+ .loading { width:32px; height:32px; border:3px solid #333; border-top-color:#ff0000; border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <header>
-    <div class="logo">HERALD <span>• YouTube</span></div>
-  </header>
-  <nav class="tabbar" role="tablist">
-    <button class="tab focusable active" data-tab="home" aria-selected="true">Home</button>
+  <div class="tabbar" role="tablist">
+    <button class="tab focusable active" data-tab="home">Home</button>
     <button class="tab focusable" data-tab="search">Search</button>
     <button class="tab focusable" data-tab="shorts">Shorts</button>
     <button class="tab focusable" data-tab="history">History</button>
     <button class="tab focusable" data-tab="account">Account</button>
-    <button class="tab focusable" data-tab="menu" aria-label="Menu">⋮</button>
-  </nav>
-  <main id="view" tabindex="-1"></main>
-  <div id="detail" aria-hidden="true"></div>
-  <div id="quickmenu" class="hidden" aria-hidden="true">
-    <div class="menu" role="dialog" aria-label="Quick Menu">
-      <div class="menu-title">QUICK MENU</div>
-      <button class="menu-btn focusable" data-action="home">Home</button>
-      <button class="menu-btn focusable" data-action="contrast">Contrast</button>
-      <button class="menu-btn focusable" data-action="back">Go back</button>
-      <button class="menu-btn focusable" data-action="live">Live</button>
-      <button class="menu-btn focusable" data-action="close">Close</button>
-    </div>
+    <button class="tab focusable" data-tab="menu">⋮</button>
   </div>
-  <footer>D-Pad: Navigate • OK: Select • Neural Band Ready</footer>
+  <div class="quick-menu" id="quickMenu">
+    <button class="focusable" data-action="home">Home</button>
+    <button class="focusable" data-action="contrast">Contrast</button>
+    <button class="focusable" data-action="back">Go back</button>
+    <button class="focusable" data-action="live">Live</button>
+    <button class="focusable" data-action="close">Close</button>
+  </div>
+  <div class="view" id="view"></div>
 </div>
+
 <script>
-const API_KEY='AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo';
-const DEMO_VIDEOS=[
-  {id:'dQw4w9WgXcQ',title:'Never Gonna Give You Up - Official Video',channel:'Rick Astley',thumb:'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
-  {id:'jNQXAC9IVRw',title:'Me at the zoo',channel:'jawed',thumb:'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg'},
-  {id:'9bZkp7q19f0',title:'PSY - GANGNAM STYLE',channel:'officialpsy',thumb:'https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg'},
-  {id:'kJQP7kiw5Fk',title:'Luis Fonsi - Despacito ft. Daddy Yankee',channel:'LuisFonsi',thumb:'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg'},
-  {id:'3JZ_D3ELwOQ',title:'Mark Ronson - Uptown Funk ft. Bruno Mars',channel:'MarkRonsonVEVO',thumb:'https://i.ytimg.com/vi/3JZ_D3ELwOQ/mqdefault.jpg'},
-  {id:'L_jWHffIx5E',title:'Nirvana - Smells Like Teen Spirit',channel:'Nirvana',thumb:'https://i.ytimg.com/vi/L_jWHffIx5E/mqdefault.jpg'},
-  {id:'fJ9rUzIMcZQ',title:'Queen – Bohemian Rhapsody',channel:'Queen Official',thumb:'https://i.ytimg.com/vi/fJ9rUzIMcZQ/mqdefault.jpg'},
-  {id:'RgKAFK5djSk',title:'Wiz Khalifa - See You Again ft. Charlie Puth',channel:'Wiz Khalifa',thumb:'https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg'}
+const API_KEY = 'AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo';
+const DEMO_VIDEOS = [
+  {id:'dQw4w9WgXcQ', title:'Rick Astley - Never Gonna Give You Up', channel:'Rick Astley', thumb:'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg'},
+  {id:'jNQXAC9IVRw', title:'Me at the zoo', channel:'jawed', thumb:'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg'},
+  {id:'9bZkp7q19f0', title:'PSY - GANGNAM STYLE', channel:'officialpsy', thumb:'https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg'},
+  {id:'kJQP7kiw5Fk', title:'Luis Fonsi - Despacito', channel:'LuisFonsi', thumb:'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg'},
+  {id:'3JZ_D3ELwOQ', title:'Mark Ronson - Uptown Funk ft. Bruno Mars', channel:'MarkRonsonVEVO', thumb:'https://i.ytimg.com/vi/3JZ_D3ELwOQ/mqdefault.jpg'},
+  {id:'L_jWHffIx5E', title:'Smash Mouth - All Star', channel:'SmashMouthVEVO', thumb:'https://i.ytimg.com/vi/L_jWHffIx5E/mqdefault.jpg'}
 ];
-let currentTab='home', focusables=[], focusIndex=0, detailOpen=false, quickMenuOpen=false, lastQuery=localStorage.getItem('herald_lastq')||'';
-const app=document.getElementById('app'), view=document.getElementById('view'), detail=document.getElementById('detail'), quickmenu=document.getElementById('quickmenu');
-const esc=s=>s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+let focusables = [], currentFocus = 0, currentTab = 'home', currentVideo = null, historyStack = [], highContrast = false;
+const view = document.getElementById('view');
+const quickMenu = document.getElementById('quickMenu');
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
 function rebuildFocus(){
-  let els=[];
-  const tabs=Array.from(document.querySelectorAll('.tabbar.tab'));
-  if(quickMenuOpen){els=Array.from(quickmenu.querySelectorAll('.focusable'))}
-  else if(detailOpen){els.push(...tabs,...Array.from(detail.querySelectorAll('.focusable')))}
-  else{els.push(...tabs,...Array.from(view.querySelectorAll('.focusable')))}
-  focusables=els; focusables.forEach(e=>e.setAttribute('tabindex','0'));
-  focusIndex=0; if(focusables.length) setTimeout(()=>focusElement(0),0);
+  // Fix navigation bug: use correct selector '.tabbar.tab' (with space)
+  const tabs = document.querySelectorAll('.tabbar.tab');
+  // Include tabs in focusables for all views
+  focusables = Array.from(document.querySelectorAll('.focusable')).filter(el => {
+    return el.offsetParent!== null &&!el.hasAttribute('disabled') && getComputedStyle(el).display!== 'none';
+  });
+  focusables.forEach(el => el.classList.remove('focused'));
 }
-function focusElement(i){focusables.forEach(el=>el.classList.remove('focused')); const el=focusables[i]; if(!el) return; el.classList.add('focused'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest',behavior:'smooth'}); focusIndex=i;}
-function handleKey(e){const k=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' ']; if(!k.includes(e.key)) return; const isInput=document.activeElement&&document.activeElement.tagName==='INPUT'; if(isInput && e.key!=='Enter' &&!e.key.startsWith('Arrow')) return; e.preventDefault(); if(e.key==='ArrowDown'||e.key==='ArrowRight'){focusIndex=(focusIndex+1)%focusables.length; focusElement(focusIndex)} else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){focusIndex=(focusIndex-1+focusables.length)%focusables.length; focusElement(focusIndex)} else if(e.key==='Enter'||e.key===' '){const el=focusables[focusIndex]; if(!el) return; if(isInput && e.key==='Enter'){doSearch(); return} if(el.tagName==='INPUT'){el.focus();return} el.click()}}
-function setTab(name){if(name==='menu') return; currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name)); closeDetail(); closeQuickMenu(); view.innerHTML=''; switch(name){case'home':loadPopular();break;case'search':renderSearch();break;case'shorts':loadShorts();break;case'history':renderHistory();break;case'account':renderAccount();break}}
-function renderVideoList(videos,title=''){view.innerHTML=`${title?`<div class="section-title">${esc(title)}</div>`:''}<div class="list">${videos.map(v=>`<button class="video-item focusable" data-id="${v.id}"><img src="${v.thumb}" alt="" loading="lazy"><div class="meta"><div class="title">${esc(v.title)}</div><div class="channel">${esc(v.channel||'')}</div></div></button>`).join('')}</div>`; view.querySelectorAll('.video-item').forEach(b=>b.addEventListener('click',()=>{const v=videos.find(x=>x.id===b.dataset.id); if(v) openDetail(v)})); rebuildFocus()}
-async function loadPopular(){view.innerHTML='<div class="empty">Loading…</div>'; try{const r=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&chart=mostPopular&maxResults=12&regionCode=US&key=${API_KEY}`); if(!r.ok) throw 0; const j=await r.json(); const vids=j.items.map(i=>({id:i.id,title:i.snippet.title,channel:i.snippet.channelTitle,thumb:i.snippet.thumbnails.medium?.url||i.snippet.thumbnails.default.url})); renderVideoList(vids,'Trending Now')}catch{renderVideoList(DEMO_VIDEOS,'Trending Now')}}
-async function loadShorts(){view.innerHTML='<div class="empty">Loading Shorts…</div>'; try{const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=12&q=shorts&key=${API_KEY}`); const j=await r.json(); const vids=(j.items||[]).map(i=>({id:i.id.videoId,title:i.snippet.title,channel:i.snippet.channelTitle,thumb:i.snippet.thumbnails.medium?.url})); renderVideoList(vids,'Shorts')}catch{renderVideoList(DEMO_VIDEOS,'Shorts')}}
-async function loadLive(){view.innerHTML='<div class="empty">Loading Live…</div>'; try{const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=12&key=${API_KEY}`); const j=await r.json(); const vids=(j.items||[]).map(i=>({id:i.id.videoId,title:i.snippet.title,channel:i.snippet.channelTitle,thumb:i.snippet.thumbnails.medium?.url})); renderVideoList(vids,'Live Now')}catch{renderVideoList(DEMO_VIDEOS,'Live Now')}}
-function renderSearch(){view.innerHTML=`<div class="search-box"><input id="searchInput" class="focusable" type="text" placeholder="Search YouTube" autocomplete="off"><button id="searchBtn" class="focusable search-btn">Search</button></div><div id="searchResults"><div class="empty">Enter query and press Search</div></div>`; const inp=document.getElementById('searchInput'); inp.value=lastQuery; document.getElementById('searchBtn').onclick=doSearch; inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch()}}); rebuildFocus(); if(lastQuery) doSearch()}
-async function doSearch(){const inp=document.getElementById('searchInput'); if(!inp) return; const q=(inp.value||'').trim()||'tech'; lastQuery=q; localStorage.setItem('herald_lastq',q); const res=document.getElementById('searchResults'); res.innerHTML='<div class="empty">Searching…</div>'; let vids=[]; try{const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(q)}&key=${API_KEY}`); const j=await r.json(); vids=(j.items||[]).map(i=>({id:i.id.videoId,title:i.snippet.title,channel:i.snippet.channelTitle,thumb:i.snippet.thumbnails.medium?.url}))}catch{vids=DEMO_VIDEOS} res.innerHTML=`<div class="section-title">Results</div><div class="list">${vids.map(v=>`<button class="video-item focusable" data-id="${v.id}"><img src="${v.thumb}" alt=""><div class="meta"><div class="title">${esc(v.title)}</div><div class="channel">${esc(v.channel||'')}</div></div></button>`).join('')}</div>`; res.querySelectorAll('.video-item').forEach(b=>b.addEventListener('click',()=>{const v=vids.find(x=>x.id===b.dataset.id);if(v)openDetail(v)})); rebuildFocus()}
-function renderHistory(){const h=JSON.parse(localStorage.getItem('herald_history')||'[]'); if(!h.length){view.innerHTML='<div class="empty">No history yet</div>'; rebuildFocus(); return} renderVideoList(h,'Recently Watched')}
-function renderAccount(){view.innerHTML=`<div class="account"><div class="avatar">RF</div><div class="name">Regal Fleury</div><div class="email">regal@meta.com</div><button class="focusable signout">Sign out</button></div>`; view.querySelector('.signout').onclick=()=>{}; rebuildFocus()}
-function openDetail(v){saveHistory(v); detailOpen=true; detail.innerHTML=`<div class="detail-hero"><img src="${(v.thumb||'').replace('mqdefault','hqdefault')}" alt=""></div><div class="detail-body"><div class="detail-title">${esc(v.title)}</div><div class="detail-channel">${esc(v.channel||'')}</div><div class="detail-actions"><button class="detail-btn primary focusable" id="playBtn">▶ Play</button><button class="detail-btn focusable" id="backBtn">← Back</button></div></div>`; detail.classList.add('open'); detail.setAttribute('aria-hidden','false'); document.getElementById('backBtn').onclick=closeDetail; document.getElementById('playBtn').onclick=()=>window.open(`https://youtube.com/watch?v=${v.id}`,'_blank'); rebuildFocus()}
-function closeDetail(){detailOpen=false; detail.classList.remove('open'); detail.setAttribute('aria-hidden','true'); rebuildFocus()}
-function saveHistory(v){let h=JSON.parse(localStorage.getItem('herald_history')||'[]'); h=h.filter(x=>x.id!==v.id); h.unshift(v); if(h.length>20) h=h.slice(0,20); localStorage.setItem('herald_history',JSON.stringify(h))}
-function openQuickMenu(){quickMenuOpen=true; quickmenu.classList.remove('hidden'); quickmenu.setAttribute('aria-hidden','false'); rebuildFocus()}
-function closeQuickMenu(){quickMenuOpen=false; quickmenu.classList.add('hidden'); quickmenu.setAttribute('aria-hidden','true'); rebuildFocus()}
-function toggleContrast(){app.classList.toggle('contrast'); localStorage.setItem('herald_contrast',app.classList.contains('contrast')?'1':'0')}
-function handleGoBack(){if(detailOpen){closeDetail()} else if(currentTab!=='home'){setTab('home')} closeQuickMenu()}
-window.addEventListener('DOMContentLoaded',()=>{
-  if(localStorage.getItem('herald_contrast')==='1') app.classList.add('contrast');
-  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const tab=t.dataset.tab; if(tab==='menu'){openQuickMenu()} else{setTab(tab)}}));
-  document.querySelectorAll('#quickmenu.menu-btn').forEach(b=>b.addEventListener('click',async()=>{const a=b.dataset.action; if(a==='home'){setTab('home');closeQuickMenu()} else if(a==='contrast'){toggleContrast()} else if(a==='back'){handleGoBack()} else if(a==='live'){closeQuickMenu(); setTab('home'); await loadLive()} else if(a==='close'){closeQuickMenu()}}));
-  document.addEventListener('keydown',handleKey);
-  setTab('home');
+
+function setFocus(el){
+  if(!el) return;
+  const idx = focusables.indexOf(el);
+  if(idx >= 0) currentFocus = idx;
+  focusables.forEach(f=>f.classList.remove('focused'));
+  el.classList.add('focused');
+  try{ el.focus({preventScroll:true}); }catch{}
+  el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+
+function moveFocus(delta){
+  if(!focusables.length) return;
+  const current = focusables[currentFocus];
+  // Fix: after opening video detail, Up reaches tabs
+  if(current && current.id === 'playBtn' && delta < 0){
+    const homeTab = document.querySelector('.tabbar.tab[data-tab="home"]');
+    if(homeTab){ setFocus(homeTab); return; }
+  }
+  currentFocus = (currentFocus + delta + focusables.length) % focusables.length;
+  setFocus(focusables[currentFocus]);
+}
+
+function setActiveTab(name){
+  document.querySelectorAll('.tabbar.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  currentTab = name;
+}
+
+function showLoading(msg='Loading...'){
+  view.innerHTML = `<div class="center"><div class="loading"></div><div>${msg}</div></div>`;
+}
+
+async function fetchRecentVideos(){
+  const publishedAfter = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=24&publishedAfter=${encodeURIComponent(publishedAfter)}&regionCode=US&key=${API_KEY}`;
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('api');
+    const data = await r.json();
+    return data.items.map(it => ({
+      id: it.id.videoId,
+      title: it.snippet.title,
+      channel: it.snippet.channelTitle,
+      thumb: it.snippet.thumbnails?.medium?.url || it.snippet.thumbnails?.default?.url,
+      published: it.snippet.publishedAt
+    }));
+  }catch(e){ return DEMO_VIDEOS; }
+}
+
+async function fetchShortsVideos(){
+  const publishedAfter = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=24&publishedAfter=${encodeURIComponent(publishedAfter)}&key=${API_KEY}`;
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('api');
+    const data = await r.json();
+    return data.items.map(it => ({
+      id: it.id.videoId,
+      title: it.snippet.title,
+      channel: it.snippet.channelTitle,
+      thumb: it.snippet.thumbnails?.medium?.url || it.snippet.thumbnails?.default?.url
+    }));
+  }catch(e){ return DEMO_VIDEOS; }
+}
+
+async function fetchLiveVideos(){
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=24&regionCode=US&key=${API_KEY}`;
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('api');
+    const data = await r.json();
+    return data.items.map(it => ({
+      id: it.id.videoId,
+      title: it.snippet.title,
+      channel: it.snippet.channelTitle,
+      thumb: it.snippet.thumbnails?.medium?.url || it.snippet.thumbnails?.default?.url
+    }));
+  }catch(e){ return DEMO_VIDEOS; }
+}
+
+function renderVideoList(videos, target = view){
+  target.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'video-list';
+  videos.forEach(v => {
+    const btn = document.createElement('button');
+    btn.className = 'video-item focusable';
+    btn.innerHTML = `<img class="thumb" src="${v.thumb}" alt="" loading="lazy"><div class="info"><div class="title">${escapeHtml(v.title)}</div><div class="meta">${escapeHtml(v.channel||'')}</div></div>`;
+    btn.onclick = () => openDetail(v);
+    list.appendChild(btn);
+  });
+  target.appendChild(list);
+  rebuildFocus();
+  const first = list.querySelector('.focusable');
+  if(first) setTimeout(()=>setFocus(first), 30);
+}
+
+function openDetail(video){
+  currentVideo = video;
+  historyStack.push(video);
+  setActiveTab(currentTab);
+  view.innerHTML = `
+    <div class="detail">
+      <img class="hero" src="${video.thumb.replace('mqdefault','hqdefault')}" alt="">
+      <h2>${escapeHtml(video.title)}</h2>
+      <div class="channel">${escapeHtml(video.channel||'')}</div>
+      <button id="playBtn" class="btn primary focusable">▶ Play</button>
+      <button id="backBtn" class="btn focusable">Back</button>
+    </div>
+  `;
+  document.getElementById('playBtn').onclick = () => playVideo(video);
+  document.getElementById('backBtn').onclick = goBack;
+  rebuildFocus();
+  // Ensure focus starts on Play button when detail opens
+  setTimeout(()=> setFocus(document.getElementById('playBtn')), 50);
+}
+
+function playVideo(video){
+  saveToHistory(video);
+  // Fix play button: open in same window for glasses
+  window.location.href = `https://m.youtube.com/watch?v=${video.id}`;
+}
+
+function saveToHistory(video){
+  let hist = JSON.parse(localStorage.getItem('rb_history')||'[]');
+  hist = hist.filter(h => h.id!== video.id);
+  hist.unshift({...video, watchedAt: Date.now()});
+  hist = hist.slice(0,50);
+  localStorage.setItem('rb_history', JSON.stringify(hist));
+}
+
+function loadHome(){
+  closeQuickMenu();
+  setActiveTab('home');
+  showLoading('Fetching latest videos');
+  fetchRecentVideos().then(videos => renderVideoList(videos));
+  historyStack = [];
+}
+
+function loadShorts(){
+  closeQuickMenu();
+  setActiveTab('shorts');
+  showLoading('Fetching Shorts');
+  fetchShortsVideos().then(videos => {
+    view.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'grid-shorts';
+    videos.forEach(v => {
+      const btn = document.createElement('button');
+      btn.className = 'short-item focusable';
+      btn.innerHTML = `<img src="${v.thumb}" loading="lazy" alt=""><div class="title">${escapeHtml(v.title)}</div>`;
+      btn.onclick = () => openDetail(v);
+      grid.appendChild(btn);
+    });
+    view.appendChild(grid);
+    rebuildFocus();
+    const first = grid.querySelector('.focusable');
+    if(first) setTimeout(()=>setFocus(first),30);
+  });
+}
+
+function loadSearch(){
+  closeQuickMenu();
+  setActiveTab('search');
+  view.innerHTML = `
+    <div class="search-box">
+      <input id="q" class="focusable" type="text" placeholder="Search YouTube" autocomplete="off">
+      <button id="go" class="btn focusable" style="min-width:80px;padding:12px">Go</button>
+    </div>
+    <div id="results"></div>
+  `;
+  const input = document.getElementById('q');
+  const go = document.getElementById('go');
+  const doSearch = async () => {
+    const q = input.value.trim();
+    if(!q) return;
+    document.getElementById('results').innerHTML = `<div class="center"><div class="loading"></div></div>`;
+    try{
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(q)}&key=${API_KEY}`;
+      const r = await fetch(url);
+      const data = await r.json();
+      const videos = data.items.map(it => ({
+        id: it.id.videoId,
+        title: it.snippet.title,
+        channel: it.snippet.channelTitle,
+        thumb: it.snippet.thumbnails?.medium?.url
+      }));
+      renderVideoList(videos, document.getElementById('results'));
+    }catch(e){
+      renderVideoList(DEMO_VIDEOS, document.getElementById('results'));
+    }
+  };
+  go.onclick = doSearch;
+  input.onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); doSearch(); } };
+  rebuildFocus();
+  setTimeout(()=> setFocus(input), 30);
+}
+
+function loadHistory(){
+  closeQuickMenu();
+  setActiveTab('history');
+  const hist = JSON.parse(localStorage.getItem('rb_history')||'[]');
+  if(!hist.length){
+    view.innerHTML = `<div class="center">No history yet</div>`;
+    rebuildFocus();
+    return;
+  }
+  renderVideoList(hist);
+}
+
+function loadAccount(){
+  closeQuickMenu();
+  setActiveTab('account');
+  view.innerHTML = `
+    <div class="center" style="gap:20px;padding-top:60px">
+      <div style="width:96px;height:96px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:42px">👓</div>
+      <div style="text-align:center">
+        <div style="font-size:20px;font-weight:600">Ray-Ban Meta</div>
+        <div style="color:#888;margin-top:4px">Guest mode</div>
+      </div>
+      <button class="btn focusable">Sign in</button>
+      <button class="btn focusable">Settings</button>
+    </div>
+  `;
+  rebuildFocus();
+  setTimeout(()=> setFocus(view.querySelector('.focusable')), 30);
+}
+
+function loadLive(){
+  closeQuickMenu();
+  setActiveTab('home');
+  showLoading('Fetching live streams');
+  fetchLiveVideos().then(videos => renderVideoList(videos));
+}
+
+function goBack(){
+  if(currentVideo){
+    currentVideo = null;
+    if(currentTab === 'shorts') loadShorts();
+    else if(currentTab === 'search') loadSearch();
+    else if(currentTab === 'history') loadHistory();
+    else loadHome();
+  }else{
+    closeQuickMenu();
+  }
+}
+
+function toggleQuickMenu(){
+  quickMenu.classList.toggle('open');
+  rebuildFocus();
+  if(quickMenu.classList.contains('open')){
+    setTimeout(()=> setFocus(quickMenu.querySelector('.focusable')), 20);
+  }else{
+    setFocus(document.querySelector('.tabbar.tab.active'));
+  }
+}
+
+function closeQuickMenu(){
+  quickMenu.classList.remove('open');
+  rebuildFocus();
+}
+
+function handleQuickAction(action){
+  switch(action){
+    case 'home': loadHome(); break;
+    case 'contrast': highContrast =!highContrast; document.body.style.filter = highContrast? 'contrast(1.4) brightness(1.15)' : ''; closeQuickMenu(); break;
+    case 'back': goBack(); break;
+    case 'live': loadLive(); break;
+    case 'close': closeQuickMenu(); break;
+  }
+}
+
+function setupTabs(){
+  document.querySelectorAll('.tabbar.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const t = tab.dataset.tab;
+      if(t === 'menu'){ toggleQuickMenu(); return; }
+      closeQuickMenu();
+      if(t==='home') loadHome();
+      else if(t==='search') loadSearch();
+      else if(t==='shorts') loadShorts();
+      else if(t==='history') loadHistory();
+      else if(t==='account') loadAccount();
+    });
+  });
+  quickMenu.querySelectorAll('button').forEach(b => b.addEventListener('click', () => handleQuickAction(b.dataset.action)));
+}
+
+function initNavigation(){
+  document.addEventListener('keydown', e => {
+    const activeEl = document.activeElement;
+    const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+    if(isInput && ['ArrowLeft','ArrowRight'].includes(e.key)) return;
+
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+      e.preventDefault();
+      if(e.key === 'ArrowUp' || e.key === 'ArrowLeft') moveFocus(-1);
+      else moveFocus(1);
+    }else if(e.key === 'Enter' || e.key === ' '){
+      if(isInput) return;
+      e.preventDefault();
+      const el = focusables[currentFocus];
+      if(el) el.click();
+    }else if(e.key === 'Escape' || e.key === 'Backspace'){
+      e.preventDefault();
+      goBack();
+    }
+  });
+
+  // D-pad touch simulation
+  let startY = 0;
+  view.addEventListener('touchstart', e => startY = e.touches[0].clientY, {passive:true});
+  view.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - startY;
+    if(Math.abs(dy) > 40){
+      if(dy < 0) moveFocus(1); else moveFocus(-1);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupTabs();
+  initNavigation();
+  loadHome();
 });
 </script>
 </body>
