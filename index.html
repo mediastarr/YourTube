@@ -2,177 +2,151 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=600, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Meta Ray-Ban Display - YouTube</title>
+<meta name="viewport" content="width=600,initial-scale=1,user-scalable=no">
+<title>Herald • YouTube for Ray-Ban</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Roboto,Helvetica,Arial,sans-serif;overscroll-behavior:none}
-  body{display:flex;align-items:center;justify-content:center}
-  #app{width:600px;height:600px;background:#000;position:relative;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
- .tabs{display:flex;height:48px;background:#000;border-bottom:1px solid #161616;flex-shrink:0}
- .tab{flex:1;background:none;border:none;color:#777;font-size:15px;font-weight:600;letter-spacing:.2px;cursor:pointer;position:relative}
- .tab.active{color:#fff}
- .tab.active::after{content:"";position:absolute;left:24px;right:24px;bottom:0;height:2px;background:#fff;border-radius:1px}
-  #listView{flex:1;overflow-y:auto;overflow-x:hidden;background:#000;-webkit-overflow-scrolling:touch}
-  #listView::-webkit-scrollbar{display:none}
-  #listView{scrollbar-width:none}
- .video-card{height:96px;display:flex;align-items:center;padding:0 8px;gap:12px;background:#000;border-bottom:1px solid #0b0b0b;cursor:pointer}
- .thumb{width:160px;height:90px;flex-shrink:0;background:#0a0a0a;object-fit:cover;display:block}
- .info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
- .title{color:#fff;font-weight:700;font-size:16px;line-height:20px;max-height:40px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
- .channel{color:#9a9a9a;font-size:13px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .focusable{outline:none;position:relative}
- .focusable.focused{box-shadow:inset 0 0 0 3px #FFD60A;z-index:3}
- .tab.focusable.focused{box-shadow:inset 0 0 0 3px #FFD60A}
-  #playerView{flex:1;background:#000;display:flex;flex-direction:column}
-  #playerView.hidden,#listView.hidden{display:none}
- .player-player{width:600px;height:340px;background:#000;flex-shrink:0}
- .player-player iframe{width:100%;height:100%;border:0;display:block;background:#000}
- .player-meta{padding:16px;flex:1;display:flex;flex-direction:column}
- .player-title{color:#fff;font-weight:700;font-size:18px;line-height:1.35;max-height:2.7em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
- .back-btn{margin-top:auto;align-self:flex-start;background:#1a1a1a;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer}
- .back-btn.focusable.focused{box-shadow:0 0 0 3px #FFD60A;background:#262626}
-  #loading{position:absolute;top:48px;left:0;right:0;bottom:0;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;z-index:50}
-  #loading.hidden{display:none}
- .spinner{width:44px;height:44px;border:3px solid #222;border-top-color:#FFD60A;border-radius:50%;animation:spin.8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
- .empty{color:#666;text-align:center;padding:80px 20px;font-size:15px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Inter,Roboto,sans-serif}
+#app{width:600px;height:600px;background:#000;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.tabs{display:flex;height:48px;border-bottom:1px solid #111}
+.tab{flex:1;background:none;border:none;color:#777;font-size:15px;font-weight:600}
+.tab.active{color:#fff}.tab.active::after{content:"";position:absolute;bottom:0;left:30%;right:30%;height:2px;background:#fff}
+#list{flex:1;overflow-y:auto;background:#000}
+.card{height:96px;display:flex;align-items:center;padding:0 8px;gap:12px;border-bottom:1px solid #0a0a0a}
+.thumb{width:160px;height:90px;background:#111;object-fit:cover}
+.info{flex:1;min-width:0}
+.title{color:#fff;font-weight:700;font-size:16px;line-height:20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.channel{color:#999;font-size:13px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.focusable{outline:none;position:relative}
+.focusable.focused{box-shadow:inset 0 0 3px #FFD60A}
+#player{position:absolute;inset:48px 0 0;background:#000;display:flex;flex-direction:column}
+#player.hidden{display:none}
+#yt{width:600px;height:340px;background:#000;flex-shrink:0}
+#yt iframe{width:100%;height:100%;border:0}
+#yt.fullscreen{height:552px}
+.controls{display:flex;gap:8px;padding:12px;background:#000;border-top:1px solid #111}
+.ctrl{flex:1;background:#1a1a1a;border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:14px}
+.ctrl.focusable.focused{background:#333;box-shadow:0 0 0 3px #FFD60A}
+#player.fullscreen .controls,#player.fullscreen .meta{display:none}
+.meta{padding:12px 16px;flex:1}
+.meta-title{font-weight:700;font-size:17px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#keyboard{position:absolute;bottom:0;left:0;right:0;background:#0a0a;border-top:1px solid #222;padding:8px;display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+#keyboard.hidden{display:none}
+.key{background:#1a1a1a;border:none;color:#fff;padding:10px 0;border-radius:6px;font-size:14px;font-weight:600}
+.key.focusable.focused{background:#333;box-shadow:0 0 0 2px #FFD60A}
+.key.wide{grid-column:span 2}
+#searchBox{display:flex;padding:12px;gap:8px;background:#000;border-bottom:1px solid #111}
+#q{flex:1;background:#111;border:1px solid #222;color:#fff;padding:12px;border-radius:20px;font-size:15px}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="tabs" role="tablist">
-    <button class="tab focusable active" data-tab="0" aria-selected="true">Home</button>
-    <button class="tab focusable" data-tab="1">Search</button>
-    <button class="tab focusable" data-tab="2">Shorts</button>
-    <button class="tab focusable" data-tab="3">Live</button>
+  <div class="tabs">
+    <button class="tab focusable active" data-t="home">Home</button>
+    <button class="tab focusable" data-t="search">Search</button>
+    <button class="tab focusable" data-t="shorts">Shorts</button>
+    <button class="tab focusable" data-t="live">Live</button>
   </div>
-  <div id="listView"></div>
-  <div id="playerView" class="hidden"></div>
-  <div id="loading" class="hidden"><div class="spinner" aria-label="Loading"></div></div>
+  <div id="list"></div>
+  <div id="player" class="hidden">
+    <div id="yt"></div>
+    <div class="meta"><div class="meta-title" id="ptitle"></div></div>
+    <div class="controls">
+      <button class="ctrl focusable" id="back">← Back</button>
+      <button class="ctrl focusable" id="rew">⏪10</button>
+      <button class="ctrl focusable" id="play">⏯️</button>
+      <button class="ctrl focusable" id="fwd">10⏩</button>
+      <button class="ctrl focusable" id="fs">⛶</button>
+    </div>
+  </div>
+  <div id="searchBox" style="display:none">
+    <input id="q" class="focusable" placeholder="Search YouTube" readonly>
+  </div>
+  <div id="keyboard" class="hidden"></div>
 </div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const API_KEY = 'AIzaSyDPiJX_1AP0-350XEa32O1NIxrfhBWwGBk';
-const DEMO_VIDEOS = [
-  {id:'dQw4w9WgXcQ',title:'Rick Astley - Never Gonna Give You Up (Official Video)',channel:'Rick Astley'},
-  {id:'9bZkp7q19f0',title:'PSY - GANGNAM STYLE (강남스타일) M/V',channel:'officialpsy'},
-  {id:'jNQXAC9IVRw',title:'Me at the zoo',channel:'jawed'},
-  {id:'kJQP7kiw5Fk',title:'Luis Fonsi - Despacito ft. Daddy Yankee',channel:'LuisFonsi'},
-  {id:'3JZ_D3ELwOQ',title:'Wiz Khalifa - See You Again ft. Charlie Puth [Official Video]',channel:'Wiz Khalifa'},
-  {id:'5qap5aO4i9A',title:'lofi hip hop radio - beats to relax/study to',channel:'Lofi Girl'},
-  {id:'hFZFjoX2DoQ',title:'NASA Live: Official Stream of NASA TV',channel:'NASA'},
-  {id:'DjB1OvEYMhY',title:'12 Hours of Relaxing Ocean 4K',channel:'Nature Relaxation'},
-  {id:'2Vv-BfVoq4g',title:'Ed Sheeran - Perfect (Official Music Video)',channel:'Ed Sheeran'},
-  {id:'RgKAFK5djSk',title:'Wiz Khalifa - See You Again (Live)',channel:'Wiz Khalifa'}
-];
+const KEY='AIzaSyDPiJX_1AP0-350XEa32O1NIxrfhBWwGBk';
+let player,currentId,currentTab='home',focusIdx=0,focusables=[],isFullscreen=false;
+const DEMO=[{id:'dQw4w9WgXcQ',title:'Rick Astley - Never Gonna Give You Up',channel:'Rick Astley'},{id:'9bZkp7q19f0',title:'PSY - GANGNAM STYLE',channel:'officialpsy'},{id:'jNQXAC9IVRw',title:'Me at the zoo',channel:'jawed'}];
 
-const tabs = Array.from(document.querySelectorAll('.tab'));
-const listView = document.getElementById('listView');
-const playerView = document.getElementById('playerView');
-const loadingEl = document.getElementById('loading');
-
-let videos = [];
-let state = {view:'list', tab:0, focusArea:'tabs', focusIndex:0, lastVideoIndex:0};
-
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function showLoading(v){loadingEl.classList.toggle('hidden',!v)}
-
-async function fetchVideos(type){
-  const publishedAfter = new Date(Date.now()-30*24*3600*1000).toISOString();
-  let url = '';
-  if(type===0) url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=30&publishedAfter=${encodeURIComponent(publishedAfter)}&regionCode=US&q=a&key=${API_KEY}`;
-  if(type===2) url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=30&q=shorts&key=${API_KEY}`;
-  if(type===3) url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=20&q=live&key=${API_KEY}`;
-  if(type===1) return DEMO_VIDEOS;
-  try{
-    const r = await fetch(url);
-    const j = await r.json();
-    return j.items.map(it=>({
-      id: it.id.videoId,
-      title: it.snippet.title,
-      channel: it.snippet.channelTitle,
-      thumb: `https://i.ytimg.com/vi/${it.id.videoId}/mqdefault.jpg`
-    }));
-  }catch(e){ return null; }
+function $(s){return document.querySelector(s)} function $$(s){return Array.from(document.querySelectorAll(s))}
+function setFocus(){
+  $$('.focusable').forEach(e=>e.classList.remove('focused'));
+  focusables=$$('.focusable').filter(e=>e.offsetParent);
+  if(focusables[focusIdx]){focusables[focusIdx].classList.add('focused');focusables[focusIdx].focus();}
 }
+function move(d){focusIdx=(focusIdx+d+focusables.length)%focusables.length;setFocus();}
 
-function renderList(items){
-  videos = items;
-  listView.innerHTML = '';
-  items.forEach((v,i)=>{
-    const card = document.createElement('div');
-    card.className = 'video-card focusable';
-    card.tabIndex = 0;
-    card.dataset.index = i;
-    card.innerHTML = `<img class="thumb" src="${v.thumb||`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`}" loading="lazy" alt=""><div class="info"><div class="title">${esc(v.title)}</div><div class="channel">${esc(v.channel)}</div></div>`;
-    card.addEventListener('click',()=>openPlayer(i));
-    listView.appendChild(card);
+async function load(tab){
+  currentTab=tab;
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t===tab));
+  $('#list').innerHTML='<div style="padding:40px;text-align:center;color:#666">Loading...</div>';
+  let url='';
+  if(tab==='home') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&q=a&key=${KEY}`;
+  if(tab==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=20&q=shorts&key=${KEY}`;
+  if(tab==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=20&q=live&key=${KEY}`;
+  let videos=DEMO;
+  try{const r=await fetch(url);const j=await r.json();videos=j.items.map(i=>({id:i.id.videoId,title:i.snippet.title,channel:i.snippet.channelTitle}))}catch(e){}
+  $('#list').innerHTML='';
+  videos.forEach(v=>{
+    const c=document.createElement('div');c.className='card focusable';c.tabIndex=0;
+    c.innerHTML=`<img class="thumb" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="title">${v.title}</div><div class="channel">${v.channel}</div></div>`;
+    c.onclick=()=>openPlayer(v);
+    $('#list').appendChild(c);
   });
-  state.view='list'; state.focusArea='list'; state.focusIndex = state.lastVideoIndex||0;
-  updateFocus();
+  setFocus();
 }
-
-function openPlayer(i){
-  const v = videos[i];
-  state.lastVideoIndex = i;
-  playerView.innerHTML = `<div class="player-player"><iframe src="https://www.youtube.com/embed/${v.id}?autoplay=1&playsinline=1&modestbranding=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div><div class="player-meta"><div class="player-title">${esc(v.title)}</div><button class="back-btn focusable">← Back</button></div>`;
-  playerView.querySelector('.back-btn').addEventListener('click', closePlayer);
-  listView.classList.add('hidden'); playerView.classList.remove('hidden');
-  state.view='player'; state.focusArea='player'; state.focusIndex=0;
-  updateFocus();
+function openPlayer(v){
+  currentId=v.id;
+  $('#player').classList.remove('hidden');
+  $('#list').style.display='none';
+  $('.tabs').style.display='none';
+  $('#ptitle').textContent=v.title;
+  if(player) player.destroy();
+  player=new YT.Player('yt',{videoId:v.id,playerVars:{autoplay:1,playsinline:1,controls:0,modestbranding:1},events:{onReady:()=>setFocus()}});
+  focusIdx=2;setFocus();
 }
-
 function closePlayer(){
-  playerView.classList.add('hidden'); listView.classList.remove('hidden');
-  playerView.innerHTML=''; state.view='list'; state.focusArea='list';
-  updateFocus();
+  if(player) player.stopVideo();
+  $('#player').classList.add('hidden');
+  $('#list').style.display='block';
+  $('.tabs').style.display='flex';
+  isFullscreen=false;$('#yt').classList.remove('fullscreen');
+  setFocus();
 }
 
-function updateFocus(){
-  document.querySelectorAll('.focusable').forEach(el=>el.classList.remove('focused'));
-  let els = state.view==='player'? Array.from(playerView.querySelectorAll('.focusable')) :
-            state.focusArea==='tabs'? tabs :
-            Array.from(listView.querySelectorAll('.focusable'));
-  if(!els.length) return;
-  state.focusIndex = Math.max(0, Math.min(state.focusIndex, els.length-1));
-  const el = els[state.focusIndex];
-  el.classList.add('focused');
-  el.focus({preventScroll:true});
-  if(state.focusArea==='list') el.scrollIntoView({block:'nearest'});
+// Controls
+$('#back').onclick=closePlayer;
+$('#play').onclick=()=>{const s=player.getPlayerState();s===1?player.pauseVideo():player.playVideo()};
+$('#rew').onclick=()=>player.seekTo(player.getCurrentTime()-10,true);
+$('#fwd').onclick=()=>player.seekTo(player.getCurrentTime()+10,true);
+$('#fs').onclick=()=>{isFullscreen=!isFullscreen;$('#yt').classList.toggle('fullscreen',isFullscreen);document.querySelector('.controls').style.display=isFullscreen?'none':'flex';document.querySelector('.meta').style.display=isFullscreen?'none':'block'};
+
+// Keyboard
+const keys='ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'.split('');
+function buildKeys(){
+  const kb=$('#keyboard');kb.innerHTML='';
+  keys.forEach(k=>{const b=document.createElement('button');b.className='key focusable';b.textContent=k;b.onclick=()=>{$('#q').value+=k};kb.appendChild(b)});
+  ['SPACE','DEL','ENTER'].forEach(k=>{const b=document.createElement('button');b.className='key focusable wide';b.textContent=k;b.onclick=()=>{if(k==='SPACE')$('#q').value+=' ';if(k==='DEL')$('#q').value=$('#q').value.slice(0,-1);if(k==='ENTER'){kb.classList.add('hidden');loadSearch($('#q').value)}};kb.appendChild(b)});
+}
+function showKeyboard(){buildKeys();$('#keyboard').classList.remove('hidden');$('#searchBox').style.display='flex';focusIdx=0;setFocus();}
+async function loadSearch(q){
+  $('#list').innerHTML='Loading...';
+  try{const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(q)}&key=${KEY}`);const j=await r.json();const vids=j.items.map(i=>({id:i.id.videoId,title:i.snippet.title,channel:i.snippet.channelTitle}));$('#list').innerHTML='';vids.forEach(v=>{const c=document.createElement('div');c.className='card focusable';c.innerHTML=`<img class="thumb" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="title">${v.title}</div><div class="channel">${v.channel}</div></div>`;c.onclick=()=>openPlayer(v);$('#list').appendChild(c)});setFocus();}catch(e){}
 }
 
-async function loadTab(i){
-  tabs.forEach((t,idx)=>t.classList.toggle('active', idx===i));
-  state.tab=i; state.focusArea='tabs'; state.focusIndex=i;
-  if(i===1){ listView.innerHTML='<div class="empty">Search coming soon – use Home/Shorts/Live</div>'; updateFocus(); return; }
-  showLoading(true);
-  const data = await fetchVideos(i);
-  showLoading(false);
-  renderList(data || DEMO_VIDEOS);
-}
+// Tabs
+$$('.tab').forEach(t=>t.onclick=()=>{if(t.dataset.t==='search'){showKeyboard()}else{load(t.dataset.t);$('#searchBox').style.display='none';$('#keyboard').classList.add('hidden')}});
 
+// D-pad
 document.addEventListener('keydown',e=>{
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Backspace'].includes(e.key)) e.preventDefault();
-  if(e.key==='ArrowRight') { if(state.focusArea==='tabs'){ state.focusIndex=Math.min(state.focusIndex+1,3); updateFocus(); } }
-  if(e.key==='ArrowLeft') { if(state.focusArea==='tabs'){ state.focusIndex=Math.max(state.focusIndex-1,0); updateFocus(); } }
-  if(e.key==='ArrowDown'){
-    if(state.focusArea==='tabs'){ state.focusArea='list'; state.focusIndex=0; }
-    else state.focusIndex++;
-    updateFocus();
-  }
-  if(e.key==='ArrowUp'){
-    if(state.view==='player'){ state.focusIndex=0; }
-    else if(state.focusArea==='list' && state.focusIndex===0){ state.focusArea='tabs'; state.focusIndex=state.tab; }
-    else state.focusIndex--;
-    updateFocus();
-  }
-  if(e.key==='Enter'){ document.activeElement?.click(); }
-  if(e.key==='Backspace' && state.view==='player') closePlayer();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1)}
+  if(e.key==='Enter'){e.preventDefault();document.activeElement?.click()}
+  if(e.key==='Backspace'&&!$('#player').classList.contains('hidden')) closePlayer();
 });
 
-tabs.forEach((t,i)=>t.addEventListener('click',()=>loadTab(i)));
-loadTab(0);
+load('home');setTimeout(setFocus,300);
 </script>
 </body>
 </html>
