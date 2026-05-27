@@ -121,7 +121,6 @@ async function load(t){
     url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&regionCode=US&q=${q}&key=${KEY}`;
   }
   if(t==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;
-  // LIVE: refreshes every tap with latest live only
   if(t==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&order=date&maxResults=20&regionCode=US&q=live&key=${KEY}`;
 
   let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){data=[{id:'dQw4w9WgXcQ',t:'Rick Astley - Never Gonna Give You Up',c:'Rick Astley'},{id:'9bZkp7q19f0',t:'PSY - GANGNAM STYLE',c:'officialpsy'},{id:'jNQXAC9IVRw',t:'Me at the zoo',c:'jawed'}]}
