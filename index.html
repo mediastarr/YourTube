@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=600,height=600,user-scalable=no">
 <title>Herald</title>
 <style>
-*{box-sizing:border-box;margin:0}body,html{height:100%;background:#000;color:#fff;font-family:system-ui,Arial}
+*{box-sizing:border-box;margin:0}html,body{height:100%;background:#000;color:#fff;font-family:system-ui,Arial}
 #app{width:600px;height:600px;background:#000;display:flex;flex-direction:column;overflow:hidden}
 .tabs{display:flex;height:48px;border-bottom:1px solid #222}
-.tab{flex:1;background:none;border:0;color:#777;font:600 15px system-ui}
+.tab{flex:1;background:none;border:none;color:#777;font:600 15px system-ui}
 .tab.on{color:#fff}
 .list{flex:1;overflow-y:auto;background:#000}
-.card{height:96px;display:flex;align-items:center;gap:12px;padding:0 8px;border-bottom:1px solid #111}
-.card img{width:160px;height:90px;object-fit:cover;background:#111}
+.card{height:96px;display:flex;align-items:center;gap:12px;padding:0 8px;border-bottom:1px solid #0a0a0a}
+.card img{width:160px;height:90px;background:#111;object-fit:cover}
 .info{flex:1;min-width:0}
-.t{font:700 16px/20px system-ui;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.t{color:#fff;font:700 16px/20px system-ui;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .c{color:#999;font:13px system-ui;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.focus{outline:3px solid #ff0;outline-offset:-3px;z-index:2}
+.focus{outline:3px solid #ff0;outline-offset:-3px}
 #player{position:absolute;inset:48px 0 0;background:#000;display:none;flex-direction:column}
 #player.show{display:flex}
 #yt{width:600px;height:340px;background:#000}
@@ -64,9 +64,9 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const KEY='AIzaSyDPiJX_1AP0-350XEa32O1NIxrfhBWwGBk';
-let player,mode='tabs',fi=0,currentTab='home',videos=[];
+let player,mode='tabs',fi=0,videos=[],currentTab='home';
 
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function foc(){
   $$('.focus').forEach(e=>e.classList.remove('focus'));
   let list=[];
@@ -154,13 +154,33 @@ $('#bfs').onclick=()=>{
 // Tabs
 $$('.tab').forEach(t=>t.onclick=()=>load(t.dataset.t));
 
-// D-pad navigation
+// D-pad - FIXED for up/down/left/right
 document.addEventListener('keydown',e=>{
   const k=e.key;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){e.preventDefault();
-    if(mode==='tabs'&&k==='ArrowDown'){mode='list';fi=0}
-    else if(mode==='list'&&k==='ArrowUp'&&fi===0){mode='tabs';fi=$$('.tab').findIndex(x=>x.classList.contains('on'))}
-    else {const max=mode==='tabs'?4:mode==='list'?videos.length:mode==='player'?5:38;fi=(fi+(k==='ArrowDown'||k==='ArrowRight'?1:-1)+max)%max}
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){
+    e.preventDefault();
+    if(mode==='tabs'){
+      if(k==='ArrowLeft') fi=Math.max(0,fi-1);
+      if(k==='ArrowRight') fi=Math.min(3,fi+1);
+      if(k==='ArrowDown'){mode='list';fi=0}
+    }
+    else if(mode==='list'){
+      if(k==='ArrowDown') fi=Math.min(fi+1,videos.length-1);
+      if(k==='ArrowUp'){if(fi===0){mode='tabs';fi=$$('.tab').findIndex(x=>x.classList.contains('on'))}else fi--}
+      if(k==='ArrowRight') fi=Math.min(fi+1,videos.length-1);
+      if(k==='ArrowLeft') fi=Math.max(fi-1,0);
+    }
+    else if(mode==='kb'){
+      const cols=10,total=$$('#kb .k').length;
+      if(k==='ArrowRight') fi=(fi+1)%total;
+      if(k==='ArrowLeft') fi=(fi-1+total)%total;
+      if(k==='ArrowDown') fi=Math.min(fi+cols,total-1);
+      if(k==='ArrowUp') fi=Math.max(fi-cols,0);
+    }
+    else if(mode==='player'){
+      if(k==='ArrowRight') fi=Math.min(fi+1,4);
+      if(k==='ArrowLeft') fi=Math.max(fi-1,0);
+    }
     foc();
   }
   if(k==='Enter'){e.preventDefault();document.querySelector('.focus')?.click()}
