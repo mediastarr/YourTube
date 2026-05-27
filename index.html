@@ -31,6 +31,10 @@
 .k.w{grid-column:span 2}
 .meta{padding:12px 16px}
 .mt{font:700 17px/1.3 system-ui;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#quick{position:absolute;inset:48px 0 0;background:#000;display:none;flex-direction:column;padding:24px}
+.qtitle{font:700 22px system-ui;margin-bottom:24px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qbtn{background:#1a1a1a;border:0;color:#fff;padding:20px;border-radius:12px;font:600 16px system-ui}
 </style>
 </head>
 <body>
@@ -40,6 +44,7 @@
     <button class="tab focus" data-t="search">Search</button>
     <button class="tab focus" data-t="shorts">Shorts</button>
     <button class="tab focus" data-t="live">Live</button>
+    <button class="tab focus" data-t="menu">⋮</button>
   </div>
   <div class="list" id="list"></div>
 
@@ -59,6 +64,16 @@
     <input id="q" readonly placeholder="Type...">
     <div id="kb"></div>
   </div>
+
+  <div id="quick">
+    <div class="qtitle">Quick Menu</div>
+    <div class="qgrid">
+      <button class="qbtn focus" data-a="home">Go Home</button>
+      <button class="qbtn focus" data-a="contrast">Contrast</button>
+      <button class="qbtn focus" data-a="close">Close</button>
+      <button class="qbtn focus" data-a="reader">Reader Mode</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -74,6 +89,7 @@ function foc(){
   else if(mode==='list') list=$$('.card');
   else if(mode==='player') list=$$('#player .btn');
   else if(mode==='kb') list=$$('#kb .k');
+  else if(mode==='quick') list=$$('#quick .qbtn');
   if(!list.length) return;
   fi=Math.max(0,Math.min(fi,list.length-1));
   list[fi].classList.add('focus');
@@ -85,18 +101,18 @@ async function load(t){
   $$('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
   $('#player').classList.remove('show');
   $('#search').classList.remove('show');
+  $('#quick').style.display='none';
   $('#list').style.display='block';
 
   if(t==='search'){showKB();return}
+  if(t==='menu'){openQuick();return}
 
   let url='';
-  // HOME: random US latest videos - refreshes every tap
   if(t==='home'){
     const terms=['music','news','gaming','sports','comedy','trailer','tech','vlog','live','trending'];
     const q=terms[Math.floor(Math.random()*terms.length)];
     url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&regionCode=US&q=${q}&key=${KEY}`;
   }
-  // SHORTS: latest US only shorts - refreshes every tap
   if(t==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;
   if(t==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&maxResults=20&regionCode=US&q=live&key=${KEY}`;
 
@@ -121,13 +137,18 @@ function openV(i){
   player=new YT.Player('yt',{videoId:v.id,playerVars:{autoplay:1,playsinline:1,controls:0}});
   mode='player';fi=2;foc();
 }
-function closeV(){$('#player').classList.remove('show');$('#list').style.display='block';mode='list';fi=0;foc()}
+// FIXED: stop video when going back
+function closeV(){
+  if(player){player.stopVideo();player.destroy();player=null}
+  $('#player').classList.remove('show');
+  $('#list').style.display='block';
+  mode='list';fi=0;foc()
+}
 
 function showKB(){
   $('#search').classList.add('show');
   $('#list').style.display='none';
   const kb=$('#kb');kb.innerHTML='';$('#q').value='';
-  // BACK BUTTON ADDED
   const back=document.createElement('button');back.className='k focus';back.style.gridColumn='span 10';back.style.background='#333';back.textContent='← Back to Home';back.onclick=()=>{$('#search').classList.remove('show');$('#list').style.display='block';load('home')};kb.appendChild(back);
 
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').forEach(ch=>{
@@ -147,6 +168,29 @@ async function search(q){
   data.forEach((v,i)=>{const d=document.createElement('div');d.className='card focus';d.innerHTML=`<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="t">${v.t}</div><div class="c">${v.c}</div></div>`;d.onclick=()=>openV(i);L.appendChild(d)});
   mode='list';fi=0;foc();
 }
+
+// Quick Menu
+function openQuick(){
+  $('#quick').style.display='flex';
+  $('#list').style.display='none';
+  $('#player').classList.remove('show');
+  $('#search').classList.remove('show');
+  mode='quick';fi=0;foc();
+}
+function closeQuick(){
+  $('#quick').style.display='none';
+  $('#list').style.display='block';
+  mode='tabs';fi=4;foc();
+}
+$$('#quick .qbtn').forEach(b=>{
+  b.onclick=()=>{
+    const a=b.dataset.a;
+    if(a==='home'){closeQuick();load('home')}
+    if(a==='contrast'){document.body.style.filter=document.body.style.filter?'':'contrast(1.3) brightness(1.1)';closeQuick()}
+    if(a==='close'){closeQuick()}
+    if(a==='reader'){document.getElementById('app').style.fontSize=document.getElementById('app').style.fontSize?'':'18px';closeQuick()}
+  }
+});
 
 // Controls
 $('#bback').onclick=closeV;
@@ -170,7 +214,7 @@ document.addEventListener('keydown',e=>{
     e.preventDefault();
     if(mode==='tabs'){
       if(k==='ArrowLeft') fi=Math.max(0,fi-1);
-      if(k==='ArrowRight') fi=Math.min(3,fi+1);
+      if(k==='ArrowRight') fi=Math.min(4,fi+1);
       if(k==='ArrowDown'){mode='list';fi=0}
     }
     else if(mode==='list'){
@@ -189,6 +233,13 @@ document.addEventListener('keydown',e=>{
     else if(mode==='player'){
       if(k==='ArrowRight') fi=Math.min(fi+1,4);
       if(k==='ArrowLeft') fi=Math.max(fi-1,0);
+    }
+    else if(mode==='quick'){
+      const cols=2,total=4;
+      if(k==='ArrowRight') fi=(fi+1)%total;
+      if(k==='ArrowLeft') fi=(fi-1+total)%total;
+      if(k==='ArrowDown') fi=Math.min(fi+cols,total-1);
+      if(k==='ArrowUp') fi=Math.max(fi-cols,0);
     }
     foc();
   }
