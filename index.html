@@ -1,65 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=600,height=600"></head>
-<body style="margin:0;background:#000;color:#fff;font-family:system-ui">
-<div id="tabs" style="display:flex">
-  <button style="flex:1;padding:18px;background:#111;border:0;color:#fff" data-t="home">Home</button>
-  <button style="flex:1;padding:18px;background:#111;border:0;color:#777" data-t="search">Search</button>
-  <button style="flex:1;padding:18px;background:#111;border:0;color:#777" data-t="menu">Menu</button>
-</div>
-<div id="list" style="padding:10px"></div>
-<div id="player" style="display:none;position:fixed;inset:0;background:#000">
-  <iframe id="yt" style="width:100%;height:85%;border:0" allowfullscreen></iframe>
-  <button id="back" style="width:100%;height:15%;background:#222;color:#fff;border:0;font-size:20px">← BACK</button>
-</div>
-
-<script>
-const videos=[
- {id:'dQw4w9WgXcQ',t:'Never Gonna Give You Up'},
- {id:'9bZkp7q19f0',t:'Gangnam Style'},
- {id:'jNQXAC9IVRw',t:'Me at the zoo'}
-];
-let mode='tabs', fi=0;
-const tabs=[...document.querySelectorAll('[data-t]')];
-
-function drawHome(){
-  document.getElementById('list').innerHTML = videos.map(v=>`
-    <div class="card" data-id="${v.id}" style="display:flex;gap:10px;padding:10px;border-bottom:1px solid #222">
-      <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" width="160" height="90">
-      <div style="padding-top:20px">${v.t}</div>
-    </div>`).join('');
-  document.querySelectorAll('.card').forEach(c=>c.onclick=()=>play(c.dataset.id));
-  mode='list'; fi=0; focus();
-}
-function play(id){
-  document.getElementById('player').style.display='block';
-  document.getElementById('yt').src='https://www.youtube.com/embed/'+id+'?autoplay=1';
-}
-document.getElementById('back').onclick=()=>{
-  document.getElementById('player').style.display='none';
-  document.getElementById('yt').src='';
-  focus();
-};
-function focus(){
-  document.querySelectorAll('.focus').forEach(e=>e.classList.remove('focus'));
-  const list = mode==='tabs'? tabs : [...document.querySelectorAll('.card')];
-  if(list[fi]){list[fi].classList.add('focus'); list[fi].style.outline='3px solid yellow';}
-}
-tabs.forEach((t,i)=>t.onclick=()=>{if(t.dataset.t==='home')drawHome();});
-
-// keys
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowRight'&&mode==='tabs'){fi=(fi+1)%3;focus();}
-  if(e.key==='ArrowLeft'&&mode==='tabs'){fi=(fi+2)%3;focus();}
-  if(e.key==='ArrowDown'&&mode==='tabs'&&fi===0){drawHome();}
-  if(e.key==='Enter'&&mode==='tabs'&&fi===0){drawHome();}
-  if(e.key==='ArrowDown'&&mode==='list'){fi=Math.min(fi+1,2);focus();}
-  if(e.key==='ArrowUp'&&mode==='list'){fi=Math.max(fi-1,0);focus();}
-  if(e.key==='Enter'&&mode==='list'){document.querySelectorAll('.card')[fi].click();}
-});
-focus();
-// auto-load home on start so you see videos immediately
-drawHome();
-</script>
+<body style="background:#000;color:#0f0;font-family:monospace;padding:40px">
+<h1>TEST V5 - If you see this, deploy worked</h1>
+<p>Time: <!-- this proves it's new --></p>
+<img src="https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg" width="320">
 </body>
 </html>
