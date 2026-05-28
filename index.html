@@ -31,7 +31,6 @@
 #q{margin:12px;background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:24px;font:16px system-ui}
 #kb{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:6px;padding:0 12px 12px;overflow-y:auto;align-content:start}
 .k{background:#1a1a1a;border:0;color:#fff;padding:14px 0;border-radius:8px;font:600 15px system-ui}
-.k.w{grid-column:span 2}
 .meta{padding:12px 16px}
 .mt{font:700 17px/1.3 system-ui;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #quick{position:absolute;inset:84px 0 0;background:#000;display:none;flex-direction:column;padding:24px}
@@ -52,7 +51,7 @@
     <button class="tab focus" data-t="menu">⋮</button>
   </div>
   <div class="list" id="list"></div>
-  <div id="player"><div id="yt"></div><div class="meta"><div class="mt" id="pt"></div></div><div class="bar"><button class="btn focus" id="bback">← Back</button><button class="btn focus" id="brew">⏪10</button><button class="btn focus" id="bplay">⏯️</button><button class="btn focus" id="bfwd">10⏩</button><button class="btn focus" id="bfs">⛶</button></div></div>
+  <div id="player"><div id="yt"></div><div class="meta"><div class="mt" id="pt"></div></div><div class="bar"><button class="btn focus" id="bback">← Back</button><button class="btn focus" id="brew">⏪10</button><button class="btn focus" id="bplay">⏯️</button><button class="btn focus" id="bfwd">10⏩</button><button class="btn focus" id="bfs">⛶</button></div>
   <div id="search"><input id="q" readonly placeholder="Tap to type..."><div id="kb"></div></div>
   <div id="quick"><div class="qtitle">Quick Menu</div><div class="qgrid"><button class="qbtn focus" data-a="home">Go Home</button><button class="qbtn focus" data-a="contrast">Contrast</button><button class="qbtn focus" data-a="close">Close</button><button class="qbtn focus" data-a="reader">Reader Mode</button><button class="qbtn focus" data-a="account">Account</button></div></div>
   <div id="account"><div class="qtitle">Account</div><div style="display:flex;flex-direction:column;gap:12px">
@@ -69,7 +68,21 @@ const KEY='AIzaSyDPiJX_1AP0-350XEa32O1NIxrfhBWwGBk';
 let player,mode='tabs',fi=0,videos=[],currentTab='home',lastSearch='';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-function foc(){$$('.focus').forEach(e=>e.classList.remove('focus'));let list=[];if(mode==='tabs')list=$$('.tab');else if(mode==='list')list=$$('.card');else if(mode==='player')list=$$('#player.btn');else if(mode==='kb')list=$$('#kb.k');else if(mode==='quick')list=$$('#quick.qbtn');else if(mode==='account')list=$$('#account.qbtn');else if(mode==='searchBar')list=[$('#q')];if(!list.length)return;fi=Math.max(0,Math.min(fi,list.length-1));list[fi].classList.add('focus');list[fi].scrollIntoView({block:'nearest'})}
+function foc(){
+  $$('.focus').forEach(e=>e.classList.remove('focus'));
+  let list=[];
+  if(mode==='tabs')list=$$('.tab');
+  else if(mode==='list')list=$$('.card');
+  else if(mode==='player')list=$$('#player.btn'); // FIXED selector
+  else if(mode==='kb')list=$$('#kb.k'); // FIXED
+  else if(mode==='quick')list=$$('#quick.qbtn'); // FIXED
+  else if(mode==='account')list=$$('#account.qbtn'); // FIXED
+  else if(mode==='searchBar')list=[$('#q')];
+  if(!list.length)return;
+  fi=Math.max(0,Math.min(fi,list.length-1));
+  list[fi].classList.add('focus');
+  list[fi].scrollIntoView({block:'nearest'});
+}
 
 async function load(t){currentTab=t;$$('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$('#player').classList.remove('show');$('#search').classList.remove('show');$('#quick').style.display='none';$('#account').style.display='none';$('#list').style.display='block';if(t==='search'){showSearchBar();return}if(t==='menu'){openQuick();return}let url='';if(t==='home'){const urls=[`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=long&order=date&maxResults=25&regionCode=US&q=documentary|podcast&key=${KEY}`,`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=25&regionCode=US&q=free+full+movies&key=${KEY}`];let data=[];try{const res=await Promise.all(urls.map(u=>fetch(u)));for(const r of res){const j=await r.json();if(j.items)data.push(...j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle})))} }catch(e){}videos=data;renderList();mode='tabs';fi=0;foc();return}if(t==='shorts')url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;if(t==='live')url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&order=date&maxResults=20&regionCode=US&q=live&key=${KEY}`;let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){}videos=data;renderList();mode='tabs';fi=$$('.tab').findIndex(x=>x.dataset.t===t);foc()}
 function renderList(){const L=$('#list');L.innerHTML='';videos.forEach((v,i)=>{const d=document.createElement('div');d.className='card focus';d.innerHTML=`<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="t">${v.t}</div><div class="c">${v.c}</div></div>`;d.onclick=()=>openV(i);L.appendChild(d)})}
