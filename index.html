@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=600,height=600,user-scalable=no">
-<title>StarrTube</title>
+<title>Herald</title>
 <style>
 *{box-sizing:border-box;margin:0}html,body{height:100%;background:#000;color:#fff;font-family:system-ui,Arial}
 #app{width:600px;height:600px;background:#000;display:flex;flex-direction:column;overflow:hidden}
-.header{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#000;border-bottom:1px solid #111}
+.header{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#000;border-bottom:1px solid #111;flex-shrink:0}
 .logo{width:24px;height:17px;background:#FF0000;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 .title{font:700 16px system-ui}
 .tabs{display:flex;height:48px;border-bottom:1px solid #222}
@@ -31,6 +31,7 @@
 #q{margin:12px;background:#111;border:1px solid #333;color:#fff;padding:14px;border-radius:24px;font:16px system-ui}
 #kb{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:6px;padding:0 12px 12px;overflow-y:auto;align-content:start}
 .k{background:#1a1a1a;border:0;color:#fff;padding:14px 0;border-radius:8px;font:600 15px system-ui}
+.k.w{grid-column:span 2}
 .meta{padding:12px 16px}
 .mt{font:700 17px/1.3 system-ui;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #quick{position:absolute;inset:84px 0 0;background:#000;display:none;flex-direction:column;padding:24px}
@@ -51,10 +52,10 @@
     <button class="tab focus" data-t="menu">⋮</button>
   </div>
   <div class="list" id="list"></div>
-  <div id="player"><div id="yt"></div><div class="meta"><div class="mt" id="pt"></div></div><div class="bar"><button class="btn focus" id="bback">← Back</button><button class="btn focus" id="brew">⏪10</button><button class="btn focus" id="bplay">⏯️</button><button class="btn focus" id="bfwd">10⏩</button><button class="btn focus" id="bfs">⛶</button></div>
+  <div id="player"><div id="yt"></div><div class="meta"><div class="mt" id="pt"></div></div><div class="bar"><button class="btn focus" id="bback">← Back</button><button class="btn focus" id="brew">⏪10</button><button class="btn focus" id="bplay">⏯️</button><button class="btn focus" id="bfwd">10⏩</button><button class="btn focus" id="bfs">⛶</button></div></div>
   <div id="search"><input id="q" readonly placeholder="Tap to type..."><div id="kb"></div></div>
   <div id="quick"><div class="qtitle">Quick Menu</div><div class="qgrid"><button class="qbtn focus" data-a="home">Go Home</button><button class="qbtn focus" data-a="contrast">Contrast</button><button class="qbtn focus" data-a="close">Close</button><button class="qbtn focus" data-a="reader">Reader Mode</button><button class="qbtn focus" data-a="account">Account</button></div></div>
-  <div id="account"><div class="qtitle">Account</div><div style="display:flex;flex-direction:column;gap:12px"><input type="text" id="username" placeholder="Username" class="qbtn focus" style="background:#1a1a1a;border:0;color:#fff;padding:20px;border-radius:12px;font:600 16px system-ui"><input type="password" id="password" placeholder="Password" class="qbtn focus" style="background:#1a1a1a;border:0;color:#fff;padding:20px;border-radius:12px;font:600 16px system-ui"><button class="qbtn focus" data-a="loginBtn" style="background:#222">Login</button><button class="qbtn focus" data-a="backhome" style="background:#333;margin-top:10px">← Back to Home</button></div></div>
+  <div id="account"><div class="qtitle">Account</div><div style="display:flex;flex-direction:column;gap:12px"><button class="qbtn focus" data-a="login">Login Info</button><button class="qbtn focus" data-a="email">regal.fleury@email.com</button><button class="qbtn focus" data-a="backhome" style="background:#333;margin-top:20px">← Back to Home</button></div></div>
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -63,73 +64,36 @@ const KEY='AIzaSyDPiJX_1AP0-350XEa32O1NIxrfhBWwGBk';
 let player,mode='tabs',fi=0,videos=[],currentTab='home',lastSearch='';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-
-function foc(){
-  document.querySelectorAll('.focus').forEach(e=>e.classList.remove('focus'));
-  let list=[];
-  if(mode==='tabs') list=$$('.tab');
-  else if(mode==='list') list=$$('.card');
-  else if(mode==='player') list=$$('#player.btn'); // FIXED SPACE
-  else if(mode==='kb') list=$$('#kb.k'); // FIXED SPACE
-  else if(mode==='quick') list=$$('#quick.qbtn'); // FIXED SPACE
-  else if(mode==='account') list=$$('#account.qbtn'); // FIXED SPACE
-  else if(mode==='searchBar') list=[$('#q')];
-  if(!list.length) return;
-  fi=Math.max(0,Math.min(fi,list.length-1));
-  list[fi].classList.add('focus');
-  list[fi].scrollIntoView({block:'nearest'});
-}
+function foc(){$$('.focus').forEach(e=>e.classList.remove('focus'));let list=[];if(mode==='tabs')list=$$('.tab');else if(mode==='list')list=$$('.card');else if(mode==='player')list=$$('#player.btn');else if(mode==='kb')list=$$('#kb.k');else if(mode==='quick')list=$$('#quick.qbtn');else if(mode==='account')list=$$('#account.qbtn');else if(mode==='searchBar')list=[$('#q')];if(!list.length)return;fi=Math.max(0,Math.min(fi,list.length-1));list[fi].classList.add('focus');list[fi].scrollIntoView({block:'nearest'})}
 
 async function load(t){
   currentTab=t;
   $$('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
-  $('#player').classList.remove('show');
-  $('#search').classList.remove('show');
-  $('#quick').style.display='none';
-  $('#account').style.display='none';
-  $('#list').style.display='block';
-
+  $('#player').classList.remove('show');$('#search').classList.remove('show');$('#quick').style.display='none';$('#account').style.display='none';$('#list').style.display='block';
   if(t==='search'){showSearchBar();return}
   if(t==='menu'){openQuick();return}
-
-  if(t==='home'){
-    // instant load
-    videos=[
-      {id:'dQw4w9WgXcQ',t:'Rick Astley - Never Gonna Give You Up',c:'RickAstley'},
-      {id:'9bZkp7q19f0',t:'PSY - GANGNAM STYLE',c:'officialpsy'},
-      {id:'jNQXAC9IVRw',t:'Me at the zoo',c:'jawed'}
-    ];
-    renderList();
-    mode='tabs';fi=0;foc();
-    // then fetch real videos in background
-    try{
-      const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=20&regionCode=US&q=trending&key=${KEY}`);
-      const j=await r.json();
-      if(j.items){videos=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}));renderList();}
-    }catch(e){}
-    return;
-  }
-
-  let url='';
-  if(t==='shorts') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;
-  if(t==='live') url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&order=date&maxResults=20&regionCode=US&q=live&key=${KEY}`;
-  try{const r=await fetch(url);const j=await r.json();videos=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){videos=[]}
-  renderList();mode='tabs';fi=$$('.tab').findIndex(x=>x.dataset.t===t);foc();
+  let url='';if(t==='home'){const urls=[`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=long&order=date&maxResults=25&regionCode=US&q=documentary|podcast&key=${KEY}`,`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=25&regionCode=US&q=free+full+movies&key=${KEY}`];let data=[];try{const res=await Promise.all(urls.map(u=>fetch(u)));for(const r of res){const j=await r.json();if(j.items)data.push(...j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle})))} }catch(e){}videos=data;renderList();mode='tabs';fi=0;foc();return}
+  if(t==='shorts')url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&order=date&maxResults=20&regionCode=US&q=shorts&key=${KEY}`;
+  if(t==='live')url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&order=date&maxResults=20&regionCode=US&q=live&key=${KEY}`;
+  let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){}videos=data;renderList();mode='tabs';fi=$$('.tab').findIndex(x=>x.dataset.t===t);foc();
 }
-
-function renderList(){const L=$('#list');L.innerHTML='';videos.forEach((v,i)=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="t">${v.t}</div><div class="c">${v.c}</div></div>`;d.onclick=()=>openV(i);L.appendChild(d)});}
+function renderList(){const L=$('#list');L.innerHTML='';videos.forEach((v,i)=>{const d=document.createElement('div');d.className='card focus';d.innerHTML=`<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"><div class="info"><div class="t">${v.t}</div><div class="c">${v.c}</div></div>`;d.onclick=()=>openV(i);L.appendChild(d)})}
 
 function openV(i){const v=videos[i];$('#player').classList.add('show');$('#list').style.display='none';$('#search').classList.remove('show');$('#pt').textContent=v.t;if(player)player.destroy();player=new YT.Player('yt',{videoId:v.id,playerVars:{autoplay:1,playsinline:1,controls:0}});mode='player';fi=2;foc()}
-function closeV(){if(player){player.stopVideo();player.destroy();player=null}$('#player').classList.remove('show');if(currentTab==='search'){$('#search').classList.add('show');$('#list').style.display='block';$('#kb').innerHTML='';mode='list';fi=0;foc();return}$('#list').style.display='block';mode='list';fi=0;foc()}
+function closeV(){if(player){player.stopVideo();player.destroy();player=null}$('#player').classList.remove('show');if(currentTab==='search'){// return to search results
+    $('#search').classList.add('show');$('#list').style.display='block';$('#kb').innerHTML='';mode='list';fi=0;renderList();foc();return}
+  $('#list').style.display='block';mode='list';fi=0;foc()}
+
+// NEW SEARCH FLOW
 function showSearchBar(){$('#search').classList.add('show');$('#list').style.display='block';$('#kb').innerHTML='';$('#q').value=lastSearch;$('#q').onclick=showKeyboard;mode='searchBar';fi=0;foc()}
-function showKeyboard(){const kb=$('#kb');kb.innerHTML='';const back=document.createElement('button');back.className='k';back.style.gridColumn='span 10';back.style.background='#333';back.textContent='← Back';back.onclick=()=>{kb.innerHTML='';mode='searchBar';foc()};kb.appendChild(back);'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').forEach(ch=>{const b=document.createElement('button');b.className='k';b.textContent=ch;b.onclick=()=>$('#q').value+=ch;kb.appendChild(b)});[['SPACE',' '],['DEL',''],['ENTER','']].forEach(([l])=>{const b=document.createElement('button');b.className='k';b.style.gridColumn='span 2';b.textContent=l;b.onclick=()=>{if(l==='SPACE')$('#q').value+=' ';else if(l==='DEL')$('#q').value=$('#q').value.slice(0,-1);else doSearch($('#q').value)};kb.appendChild(b)});mode='kb';fi=0;foc()}
-async function doSearch(q){lastSearch=q;try{const r=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&regionCode=US&q=${encodeURIComponent(q)}&key=${KEY}`);const j=await r.json();videos=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){videos=[]}$('#kb').innerHTML='';renderList();mode='list';fi=0;foc()}
+function showKeyboard(){const kb=$('#kb');kb.innerHTML='';const back=document.createElement('button');back.className='k focus';back.style.gridColumn='span 10';back.style.background='#333';back.textContent='← Back';back.onclick=()=>{kb.innerHTML='';mode='searchBar';foc()};kb.appendChild(back);'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').forEach(ch=>{const b=document.createElement('button');b.className='k focus';b.textContent=ch;b.onclick=()=>$('#q').value+=ch;kb.appendChild(b)});[['SPACE',' '],['DEL',''],['ENTER','']].forEach(([l])=>{const b=document.createElement('button');b.className='k focus';b.style.gridColumn='span 2';b.textContent=l;b.onclick=()=>{if(l==='SPACE')$('#q').value+=' ';else if(l==='DEL')$('#q').value=$('#q').value.slice(0,-1);else{doSearch($('#q').value)}};kb.appendChild(b)});mode='kb';fi=0;foc()}
+async function doSearch(q){lastSearch=q;const url=`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=30&regionCode=US&q=${encodeURIComponent(q)}&key=${KEY}`;let data=[];try{const r=await fetch(url);const j=await r.json();data=j.items.map(i=>({id:i.id.videoId,t:i.snippet.title,c:i.snippet.channelTitle}))}catch(e){}videos=data;$('#kb').innerHTML='';renderList();mode='list';fi=0;foc()}
+
 function openQuick(){$('#quick').style.display='flex';$('#list').style.display='none';mode='quick';fi=0;foc()}
 function closeQuick(){$('#quick').style.display='none';$('#list').style.display='block';mode='tabs';fi=4;foc()}
 function openAccount(){$('#account').style.display='flex';$('#quick').style.display='none';mode='account';fi=0;foc()}
-
 $$('#quick.qbtn').forEach(b=>{b.onclick=()=>{const a=b.dataset.a;if(a==='home'){closeQuick();load('home')}if(a==='contrast'){document.body.style.filter=document.body.style.filter?'':'contrast(1.3) brightness(1.1)';closeQuick()}if(a==='close'){closeQuick()}if(a==='reader'){document.getElementById('app').style.fontSize=document.getElementById('app').style.fontSize?'':'18px';closeQuick()}if(a==='account'){openAccount()}}});
-$$('#account.qbtn').forEach(b=>{b.onclick=()=>{if(b.dataset.a==='backhome'){$('#account').style.display='none';load('home')}}});
+$$('#account.qbtn').forEach(b=>{b.onclick=()=>{if(b.dataset.a==='backhome'){$('#account').style.display='none';load('home')}});
 
 $('#bback').onclick=closeV;
 $('#bplay').onclick=()=>{const s=player.getPlayerState();s===1?player.pauseVideo():player.playVideo()};
@@ -140,22 +104,7 @@ $('#bfs').onclick=()=>{const yt=$('#yt');const fs=yt.style.height==='600px';yt.s
 $$('.tab').forEach(t=>t.onclick=()=>load(t.dataset.t));
 $('#q').addEventListener('click',showKeyboard);
 
-document.addEventListener('keydown',e=>{
-  const k=e.key;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){
-    e.preventDefault();
-    if(mode==='tabs'){if(k==='ArrowLeft')fi=Math.max(0,fi-1);if(k==='ArrowRight')fi=Math.min(4,fi+1);if(k==='ArrowDown'){mode='list';fi=0}}
-    else if(mode==='list'){if(k==='ArrowDown'){if(currentTab==='home'&&fi===videos.length-1){mode='tabs';fi=0}else fi=Math.min(fi+1,videos.length-1)}if(k==='ArrowUp'){if(fi===0&&currentTab!=='search'){mode='tabs';fi=0}else fi=Math.max(0,fi-1)}if(k==='ArrowRight')fi=Math.min(fi+1,videos.length-1);if(k==='ArrowLeft')fi=Math.max(fi-1,0)}
-    else if(mode==='kb'){const cols=10,total=$$('#kb.k').length;if(k==='ArrowRight')fi=(fi+1)%total;if(k==='ArrowLeft')fi=(fi-1+total)%total;if(k==='ArrowDown')fi=Math.min(fi+cols,total-1);if(k==='ArrowUp')fi=Math.max(fi-cols,0)}
-    else if(mode==='player'){if(k==='ArrowRight')fi=Math.min(fi+1,4);if(k==='ArrowLeft')fi=Math.max(fi-1,0)}
-    else if(mode==='quick'){const cols=2,total=5;if(k==='ArrowRight')fi=(fi+1)%total;if(k==='ArrowLeft')fi=(fi-1+total)%total;if(k==='ArrowDown')fi=Math.min(fi+cols,total-1);if(k==='ArrowUp')fi=Math.max(fi-cols,0)}
-    else if(mode==='account'){const total=4;if(k==='ArrowDown')fi=Math.min(fi+1,total-1);if(k==='ArrowUp')fi=Math.max(fi-1,0)}
-    else if(mode==='searchBar'){if(k==='Enter')showKeyboard()}
-    foc();
-  }
-  if(k==='Enter'){e.preventDefault();document.querySelector('.focus')?.click()}
-  if(k==='Backspace'&&mode==='player')closeV();
-});
+document.addEventListener('keydown',e=>{const k=e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){e.preventDefault();if(mode==='tabs'){if(k==='ArrowLeft')fi=Math.max(0,fi-1);if(k==='ArrowRight')fi=Math.min(4,fi+1);if(k==='ArrowDown'){mode='list';fi=0}}else if(mode==='list'){if(k==='ArrowDown')fi=Math.min(fi+1,videos.length-1);if(k==='ArrowUp'){if(fi===0&&currentTab!=='search'){mode='tabs';fi=1}else fi=Math.max(0,fi-1)}if(k==='ArrowRight')fi=Math.min(fi+1,videos.length-1);if(k==='ArrowLeft')fi=Math.max(fi-1,0)}else if(mode==='kb'){const cols=10,total=$$('#kb.k').length;if(k==='ArrowRight')fi=(fi+1)%total;if(k==='ArrowLeft')fi=(fi-1+total)%total;if(k==='ArrowDown')fi=Math.min(fi+cols,total-1);if(k==='ArrowUp')fi=Math.max(fi-cols,0)}else if(mode==='player'){if(k==='ArrowRight')fi=Math.min(fi+1,4);if(k==='ArrowLeft')fi=Math.max(fi-1,0)}else if(mode==='quick'){const cols=2,total=5;if(k==='ArrowRight')fi=(fi+1)%total;if(k==='ArrowLeft')fi=(fi-1+total)%total;if(k==='ArrowDown')fi=Math.min(fi+cols,total-1);if(k==='ArrowUp')fi=Math.max(fi-cols,0)}else if(mode==='account'){const total=3;if(k==='ArrowDown')fi=Math.min(fi+1,total-1);if(k==='ArrowUp')fi=Math.max(fi-1,0)}else if(mode==='searchBar'){if(k==='Enter')showKeyboard()}foc()}if(k==='Enter'){e.preventDefault();document.querySelector('.focus')?.click()}if(k==='Backspace'&&mode==='player')closeV()});
 
 load('home');
 </script>
