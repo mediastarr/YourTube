@@ -2,147 +2,117 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>YouTube Mobile Clone</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f0f">
+<meta name="ray-ban-display" content="true">
+<title>GlassTube for Ray-Ban</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="https://www.youtube.com/s/desktop/12d6b690/img/favicon_192x192.png">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-  :root{--bg:#0f0f0f;--card:#181818;--text:#fff;--sub:#aaa;--chip:#272727}
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Roboto,system-ui,Arial,sans-serif}
-  header{position:sticky;top:0;z-index:50;background:var(--bg);padding:8px 12px 0}
- .top{display:flex;align-items:center;justify-content:space-between;height:48px}
- .logo{display:flex;align-items:center;gap:6px;font-weight:700;font-size:20px}
- .logo span{background:#ff0000;color:#fff;padding:2px 5px;border-radius:6px;font-size:14px}
- .actions{display:flex;gap:18px;align-items:center;font-size:20px}
- .avatar{width:28px;height:28px;border-radius:50%;background:#333}
-  #searchBar{display:flex;margin:8px 0}
-  #searchBar input{flex:1;background:#121212;border:1px solid #303030;border-radius:24px;padding:10px 14px;color:#fff;font-size:15px;outline:none}
- .chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 12px;scrollbar-width:none}
- .chips::-webkit-scrollbar{display:none}
- .chip{flex-shrink:0;background:var(--chip);padding:7px 12px;border-radius:8px;font-size:14px;border:1px solid #333}
- .chip.active{background:#fff;color:#000}
-  main{padding-bottom:70px}
- .video{margin-bottom:16px}
- .thumb{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
+  html,body{background:#0f0f0f;margin:0;color:#fff;font-family:Roboto,system-ui;height:100%;overflow:hidden}
+ .topbar{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;z-index:30;display:flex;gap:8px;background:#0f0f0f;border:1px solid #272727;border-radius:24px;padding:8px 12px}
+ .logo{width:28px;height:28px;background:#f00;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700}
+ .searchbox{flex:1;background:#121212;border:1px solid #303030;border-radius:16px;padding:8px 12px;color:#fff;font-size:14px;outline:none}
+  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:20px;-webkit-overflow-scrolling:touch}
+ .vid{ background:#181818;border-radius:12px;overflow:hidden }
+ .thumb{position:relative;aspect-ratio:16/9;background:#000}
  .thumb img{width:100%;height:100%;object-fit:cover}
- .duration{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.8);padding:2px 4px;border-radius:4px;font-size:12px}
- .meta{display:flex;gap:12px;padding:10px 12px}
- .av{width:36px;height:36px;border-radius:50%;background:#333;flex-shrink:0;margin-top:2px}
- .info{flex:1;min-width:0}
- .title{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
- .sub{font-size:13px;color:var(--sub)}
- .shorts-shelf{padding:0 12px 16px}
- .shorts-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
- .shorts-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
- .shorts-row::-webkit-scrollbar{display:none}
- .short{width:110px;flex-shrink:0}
- .short.thumb{aspect-ratio:9/16;border-radius:12px}
- .short.title{font-size:12px;margin-top:6px;-webkit-line-clamp:2}
- .bottom{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid #222;display:flex;justify-content:space-around;padding:8px 0 20px;z-index:40}
- .bitem{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--sub);gap:4px}
- .bitem.active{color:#fff}
- .bitem span{font-size:20px}
-  #player{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
-  #player.show{display:flex}
-  #player iframe{width:100%;aspect-ratio:16/9;border:0}
-  #player.close{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px}
- .player-meta{padding:12px}
+ .meta{padding:8px;font-size:13px}
+  #shortsFeed{position:fixed;inset:0;display:none;overflow-y:scroll;scroll-snap-type:y mandatory;background:#000;z-index:15}
+  #shortsFeed.active{display:block}
+ .short{height:100vh;scroll-snap-align:start;position:relative}
+ .short iframe{width:100%;height:100%;border:0}
+ .mute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:56px;opacity:0;transition:.2s;pointer-events:none}
+ .mute.show{opacity:.9}
+  #shortsBack{position:fixed;top:20px;left:20px;width:44px;height:44px;background:rgba(0,0,0,.6);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:24px;z-index:25}
+  #shortsBack.show{display:flex}
+ .tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:#0f0f0f;border:1px solid #272727;border-radius:28px;padding:6px 10px;z-index:20}
+ .tab{padding:6px 12px;border-radius:20px;font-size:12px;color:#aaa}
+ .tab.active{background:#272727;color:#fff}
+ .rb-cursor{position:fixed;width:28px;height:28px;border:2px solid #3ea6ff;border-radius:50%;pointer-events:none;z-index:999;display:none;box-shadow:0 0 10px #3ea6ff}
+  #player{position:fixed;inset:0;background:#000;z-index:100;display:none}
+  #player.show{display:block}
+  #player iframe{width:100%;height:100%;border:0}
+  #closeP{position:absolute;top:20px;right:20px;width:44px;height:44px;background:rgba(0,0,0,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px}
 </style>
 </head>
 <body>
-<header>
-  <div class="top">
-    <div class="logo"><span>▶</span> YouTube</div>
-    <div class="actions">
-      <div id="searchBtn">🔍</div>
-      <div>📡</div>
-      <div>🔔</div>
-      <div class="avatar"></div>
-    </div>
-  </div>
-  <div id="searchBar" hidden><input id="q" type="search" placeholder="Search YouTube" enterkeyhint="search"></div>
-  <div class="chips" id="chips">
-    <div class="chip active">All</div><div class="chip">Music</div><div class="chip">Gaming</div><div class="chip">News</div><div class="chip">Shorts</div><div class="chip">Live</div>
-  </div>
-</header>
+<div class="rb-cursor" id="rbCursor"></div>
 
-<main id="feed"></main>
-
-<nav class="bottom">
-  <div class="bitem active" data-tab="home"><span>🏠</span>Home</div>
-  <div class="bitem" data-tab="shorts"><span>▶️</span>Shorts</div>
-  <div class="bitem" data-tab="create"><span>＋</span></div>
-  <div class="bitem" data-tab="subs"><span>📺</span>Subs</div>
-  <div class="bitem" data-tab="you"><span>👤</span>You</div>
-</nav>
-
-<div id="player">
-  <div class="close" id="closeP">✕</div>
-  <div id="pWrap"></div>
-  <div class="player-meta" id="pMeta"></div>
+<div class="topbar">
+  <div class="logo">▶</div>
+  <input id="search" class="searchbox" type="search" placeholder="Search YouTube" enterkeyhint="search">
 </div>
 
+<div id="feed"></div>
+<div id="shortsFeed"></div>
+<div id="shortsBack">×</div>
+
+<div class="tabs">
+  <div class="tab active" data-t="home">Home</div>
+  <div class="tab" data-t="shorts">Shorts</div>
+  <div class="tab" data-t="subs">Subs</div>
+</div>
+
+<div id="player"><div id="closeP">×</div><div id="pWrap" style="height:100%"></div></div>
+
 <script>
-// --- your key pool from before ---
-const API_KEYS = ['AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo','AIzaSyAOBBJC3VvRsAQC2R-nenGvO23x--9SzB0','AIzaSyCxt2XsA80s67LNRTpgg-fBYqqHn2YgWDI','AIzaSyDHjpWZX7J9-39VM9Urb8LM102nr1H91GY','AIzaSyAivKVAqJkYqAkzX3lV1f8FiFlU-EchNYI','AIzaSyBFVv1THj4Q0jJvNJv9jfyUnYz8NG4eWRk','AIzaSyD4A2061bz3jVUjFg3Z8jsbgjiF7ii32h4','AIzaSyA1AKHRCe7aq8Bv4j6KqXTjmg9hS1Fc9ho'];
-let k = parseInt(localStorage.ytk||'0');
-async function yt(url){const key=API_KEYS[k];const r=await fetch(url+(url.includes('?')?'&':'?')+'key='+key);const d=await r.json();if(d.error){k=(k+1)%API_KEYS.length;localStorage.ytk=k;return yt(url)}localStorage.ytk=k;return d}
+// --- Ray-Ban Meta Display SDK ---
+let rb=null;
+if(window.RayBanDisplay){
+  rb=new RayBanDisplay({cursor:true,gesture:true,voice:true,haptic:true});
+  document.getElementById('rbCursor').style.display='block';
+  rb.on('move',(x,y)=>{const c=document.getElementById('rbCursor');c.style.left=x+'px';c.style.top=y+'px'});
+  rb.on('tap',e=>{document.elementFromPoint(e.x,e.y)?.click();rb.haptic(8)});
+  rb.on('swipe',d=>{const s=document.getElementById('shortsFeed').classList.contains('active');
+    if(s){shortsFeed.scrollBy({top:d==='up'?-innerHeight:innerHeight,behavior:'smooth'})}
+    else{feed.scrollBy({top:d==='up'?-200:200,behavior:'smooth'})}
+    rb.haptic(5)
+  });
+  rb.on('voice',t=>{if(t.includes('search'))search.focus();if(t.includes('home'))loadHome();if(t.includes('shorts'))loadShorts();if(t.includes('close'))closePlayer()});
+}
 
-const feed=document.getElementById('feed');
-const searchBtn=document.getElementById('searchBtn');
-const searchBar=document.getElementById('searchBar');
-const q=document.getElementById('q');
+// --- YouTube API with your key pool ---
+const KEYS=['AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo','AIzaSyAOBBJC3VvRsAQC2R-nenGvO23x--9SzB0','AIzaSyCxt2XsA80s67LNRTpgg-fBYqqHn2YgWDI','AIzaSyDHjpWZX7J9-39VM9Urb8LM102nr1H91GY','AIzaSyAivKVAqJkYqAkzX3lV1f8FiFlU-EchNYI','AIzaSyBFVv1THj4Q0jJvNJv9jfyUnYz8NG4eWRk','AIzaSyD4A2061bz3jVUjFg3Z8jsbgjiF7ii32h4','AIzaSyA1AKHRCe7aq8Bv4j6KqXTjmg9hS1Fc9ho'];
+let ki=parseInt(localStorage.ytk||0);
+async function yt(u,i=ki){const r=await fetch(u+(u.includes('?')?'&':'?')+'key='+KEYS[i]);const d=await r.json();if(d.error){ki=(i+1)%KEYS.length;localStorage.ytk=ki;return yt(u,ki)}localStorage.ytk=i;return d}
 
-searchBtn.onclick=()=>{searchBar.hidden=!searchBar.hidden;if(!searchBar.hidden)q.focus()};
-q.onkeydown=e=>{if(e.key==='Enter')doSearch(q.value)};
+const feed=document.getElementById('feed'),shortsFeed=document.getElementById('shortsFeed'),search=document.getElementById('search');
+search.onkeydown=e=>{if(e.key==='Enter')doSearch(search.value)};
 
 async function loadHome(){
-  feed.innerHTML='';
-  // Shorts shelf first
-  const s=await yt('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=10&q=%23shorts&regionCode=US');
-  const shelf=document.createElement('div'); shelf.className='shorts-shelf';
-  shelf.innerHTML=`<div class="shorts-head"><div style="display:flex;align-items:center;gap:8px"><img src="https://www.gstatic.com/youtube/img/shorts/favicon.ico" width="20"><b>Shorts</b></div></div><div class="shorts-row" id="sr"></div>`;
-  feed.appendChild(shelf);
-  const sr=shelf.querySelector('#sr');
-  s.items.forEach(v=>{const d=document.createElement('div');d.className='short';d.innerHTML=`<div class="thumb"><img src="https://i.ytimg.com/vi/${v.id.videoId}/hqdefault.jpg"></div><div class="title">${v.snippet.title}</div>`;d.onclick=()=>openPlayer(v.id.videoId,v.snippet);sr.appendChild(d)});
-
-  // Main feed
-  const d=await yt('https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=20&regionCode=US');
-  d.items.forEach(v=>addVideo(v));
+  feed.innerHTML='';document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='home'));
+  const d=await yt('https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=24&regionCode=US');
+  d.items.forEach(v=>{
+    const el=document.createElement('div');el.className='vid';
+    el.innerHTML=`<div class="thumb"><img src="${v.snippet.thumbnails.medium.url}"></div><div class="meta">${v.snippet.title}</div>`;
+    el.onclick=()=>openPlayer(v.id);
+    feed.appendChild(el);
+  });
 }
-
-function addVideo(v){
-  const views=Number(v.statistics.viewCount).toLocaleString();
-  const el=document.createElement('div');el.className='video';
-  el.innerHTML=`<div class="thumb"><img src="${v.snippet.thumbnails.high?.url||v.snippet.thumbnails.medium.url}"><div class="duration">${fmt(v.contentDetails.duration)}</div></div>
-  <div class="meta"><div class="av"></div><div class="info"><div class="title">${v.snippet.title}</div><div class="sub">${v.snippet.channelTitle} • ${views} views</div></div><div>⋮</div></div>`;
-  el.onclick=()=>openPlayer(v.id, v.snippet);
-  feed.appendChild(el);
+async function doSearch(q){const d=await yt(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(q)}`);feed.innerHTML='';d.items.forEach(v=>{const el=document.createElement('div');el.className='vid';el.innerHTML=`<div class="thumb"><img src="${v.snippet.thumbnails.medium.url}"></div><div class="meta">${v.snippet.title}</div>`;el.onclick=()=>openPlayer(v.id.videoId);feed.appendChild(el)})}
+async function loadShorts(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='shorts'));
+  shortsFeed.classList.add('active');document.getElementById('shortsBack').classList.add('show');
+  const d=await yt('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=12&q=%23shorts');
+  shortsFeed.innerHTML='';d.items.forEach(v=>{const s=document.createElement('div');s.className='short';s.innerHTML=`<iframe src="https://www.youtube.com/embed/${v.id.videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&loop=1&playlist=${v.id.videoId}" allow="autoplay"></iframe><div class="mute">🔇</div>`;s.dataset.m=1;s.onclick=()=>{const f=s.querySelector('iframe'),m=s.querySelector('.mute'),mut=s.dataset.m==='1';f.contentWindow.postMessage(JSON.stringify({event:'command',func:mut?'unMute':'mute',args:''}),'*');s.dataset.m=mut?0:1;m.textContent=mut?'🔊':'🔇';m.classList.add('show');setTimeout(()=>m.classList.remove('show'),800);if(rb)rb.haptic(10)};shortsFeed.appendChild(s)});
 }
-
-function fmt(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);const h=m[1]?m[1]+':':'';const min=(m[2]||'0').padStart(h?2:1,'0');const s=(m[3]||'0').padStart(2,'0');return h+min+':'+s}
-
-async function doSearch(term){
-  if(!term)return; feed.innerHTML='<div style="padding:20px;color:#aaa">Searching…</div>';
-  const d=await yt(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(term)}`);
-  feed.innerHTML=''; for(const it of d.items){const v=await yt(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${it.id.videoId}`); if(v.items[0])addVideo(v.items[0])}
-  searchBar.hidden=true;
-}
-
-function openPlayer(id, sn){
-  document.getElementById('player').classList.add('show');
-  document.getElementById('pWrap').innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
-  document.getElementById('pMeta').innerHTML=`<div class="title">${sn.title}</div><div class="sub">${sn.channelTitle}</div>`;
-}
-document.getElementById('closeP').onclick=()=>{document.getElementById('player').classList.remove('show');document.getElementById('pWrap').innerHTML=''};
-
-// bottom nav
-document.querySelectorAll('.bitem').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.bitem').forEach(x=>x.classList.remove('active'));b.classList.add('active');
-  const t=b.dataset.tab; if(t==='home')loadHome(); if(t==='shorts')location.href='?tab=shorts'; if(t==='subs')feed.innerHTML='<div style="padding:40px;text-align:center;color:#aaa">Sign in to see subscriptions</div>';
-});
+function openPlayer(id){document.getElementById('player').classList.add('show');document.getElementById('pWrap').innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1" allowfullscreen></iframe>`;if(rb)rb.haptic(12)}
+function closePlayer(){document.getElementById('player').classList.remove('show');document.getElementById('pWrap').innerHTML=''}
+document.getElementById('closeP').onclick=closePlayer;
+document.getElementById('shortsBack').onclick=()=>{shortsFeed.classList.remove('active');document.getElementById('shortsBack').classList.remove('show');loadHome()};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>t.dataset.t==='home'?loadHome():t.dataset.t==='shorts'?loadShorts():null);
 
 loadHome();
+
+// PWA
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'))}
 </script>
 </body>
 </html>
