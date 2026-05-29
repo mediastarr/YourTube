@@ -1,0 +1,38 @@
+{
+  "name": "YouTube",
+  "short_name": "YouTube",
+  "description": "Mobile YouTube clone",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "categories": ["video", "entertainment"],
+  "icons": [
+    {
+      "src": "https://www.youtube.com/s/desktop/12d6b690/img/favicon_32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://www.youtube.com/s/desktop/12d6b690/img/favicon_144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://www.youtube.com/s/desktop/12d6b690/img/favicon_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://www.youtube.com/s/desktop/12d6b690/img/favicon_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
