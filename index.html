@@ -16,9 +16,11 @@
   .v{background:#181818;border-radius:12px;overflow:hidden}
   .t{aspect-ratio:16/9;background:#000}.t img{width:100%;height:100%;object-fit:cover;display:block}
   .m{padding:8px;font-size:13px;line-height:1.3}
-  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:50}
+  /* SHORTS - now scrollable */
+  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:50;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
   #shorts.on{display:block}
-  #shorts iframe{width:100%;height:100%;border:0}
+  .s-item{width:100%;height:100vh;scroll-snap-align:start;position:relative}
+  .s-item iframe{width:100%;height:100%;border:0}
   #tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:12px;background:#111;padding:8px 16px;border-radius:28px;z-index:30;border:1px solid #272727}
   .tb{padding:6px 14px;color:#aaa;font-size:13px;border-radius:18px}.tb.on{color:#fff;background:#333}
   .back{position:fixed;top:20px;left:20px;width:40px;height:40px;background:rgba(0,0,0,.7);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:60;font-size:22px}
@@ -33,21 +35,16 @@
 <div id="tabs"><div class="tb on" data-t="h">Home</div><div class="tb" data-t="s">Shorts</div></div>
 
 <script>
-// --- NO API KEYS NEEDED ---
 const HOME_VIDS=[
   {id:'dQw4w9WgXcQ',t:'Rick Astley - Never Gonna Give You Up'},
   {id:'9bZkp7q19f0',t:'PSY - GANGNAM STYLE'},
   {id:'kJQP7kiw5Fk',t:'Luis Fonsi - Despacito'},
   {id:'CevxZvSJLk8',t:'Katy Perry - Roar'},
   {id:'OPf0YbXqDm0',t:'Mark Ronson - Uptown Funk'},
-  {id:'RgKAFK5djSk',t:'Wiz Khalifa - See You Again'},
-  {id:'pRpeEdMmmQ0',t:'Shakira - Waka Waka'},
-  {id:'YQHsXMglC9A',t:'Adele - Hello'},
-  {id:'JGwWNGJdvx8',t:'Ed Sheeran - Shape of You'},
-  {id:'fJ9rUzIMcZQ',t:'Queen - Bohemian Rhapsody'}
+  {id:'RgKAFK5djSk',t:'Wiz Khalifa - See You Again'}
 ];
-const SHORTS=['ckzUY_Dxp_g','8WylF542tR4','i5q7w0A4gHY','x5-KB5Kx8F4','d0T2gK5WPMU'];
-let sIdx=0;
+// Shorts starts with your ID, then more
+const SHORTS=['ckzUY_Dxp_g','8WylF542tR4','i5q7w0A4gHY','x5-KB5Kx8F4','d0T2gK5WPMU','9R8aSKwEw0k'];
 
 const feed=document.getElementById('feed'),shorts=document.getElementById('shorts'),back=document.getElementById('back');
 
@@ -55,7 +52,13 @@ const feed=document.getElementById('feed'),shorts=document.getElementById('short
 if(window.RayBanDisplay){
   const rb=new RayBanDisplay({cursor:true,gesture:true});
   rb.on('tap',e=>{const el=document.elementFromPoint(e.x,e.y);if(el?.id==='search')el.focus();else el?.click()});
-  rb.on('swipe',d=>{if(shorts.classList.contains('on')){sIdx+=d==='up'?-1:1;loadShort()}else{feed.scrollBy({top:d==='up'?-250:250,behavior:'smooth'})}});
+  rb.on('swipe',d=>{
+    if(shorts.classList.contains('on')){
+      shorts.scrollBy({top:d==='up'?-window.innerHeight:window.innerHeight,behavior:'smooth'});
+    }else{
+      feed.scrollBy({top:d==='up'?-250:250,behavior:'smooth'});
+    }
+  });
 }
 
 function showHome(){
@@ -65,7 +68,7 @@ function showHome(){
   feed.innerHTML='';
   HOME_VIDS.forEach(v=>{
     const d=document.createElement('div');d.className='v';
-    d.innerHTML=`<div class="t"><img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" loading="lazy"></div><div class="m">${v.t}</div>`;
+    d.innerHTML=`<div class="t"><img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"></div><div class="m">${v.t}</div>`;
     d.onclick=()=>window.open(`https://m.youtube.com/watch?v=${v.id}`,'_blank');
     feed.appendChild(d);
   });
@@ -75,11 +78,25 @@ function showShorts(){
   document.getElementById('top').style.display='none';
   document.getElementById('tabs').style.display='none';
   shorts.classList.add('on');back.classList.add('on');
-  loadShort();
-}
-function loadShort(){
-  sIdx=(sIdx+SHORTS.length)%SHORTS.length;
-  shorts.innerHTML=`<iframe src="https://www.youtube.com/embed/${SHORTS[sIdx]}?autoplay=1&playsinline=1&mute=0&loop=1&playlist=${SHORTS[sIdx]}" allow="autoplay;fullscreen"></iframe>`;
+  // build vertical feed
+  shorts.innerHTML = SHORTS.map(id=>`
+    <div class="s-item">
+      <iframe src="https://www.youtube.com/embed/${id}?playsinline=1&enablejsapi=1&mute=0" allow="autoplay;fullscreen" loading="lazy"></iframe>
+    </div>`).join('');
+  
+  // auto-play visible video, pause others
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(en=>{
+      const f=en.target.querySelector('iframe');
+      if(!f)return;
+      if(en.isIntersecting){
+        f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}','*');
+      }else{
+        f.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');
+      }
+    });
+  },{threshold:0.7});
+  shorts.querySelectorAll('.s-item').forEach(el=>obs.observe(el));
 }
 
 document.getElementById('search').onkeydown=e=>{if(e.key==='Enter')location.href=`https://m.youtube.com/results?search_query=${encodeURIComponent(e.target.value)}`};
