@@ -2,52 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#000">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
 <meta name="ray-ban-display" content="true">
 <title>YouTube</title>
 <link rel="manifest" href="/manifest.json">
 <style>
-  html,body{margin:0;height:100%;background:#0f0f0f;color:#fff;font-family:Roboto,system-ui;overflow:hidden}
-  #top{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;display:flex;gap:8px;z-index:30}
-  #search{flex:1;background:#121212;border:1px solid #333;border-radius:20px;padding:10px 14px;color:#fff;font-size:15px;outline:none}
-  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px}
- .v{background:#181818;border-radius:12px;overflow:hidden}
- .t{aspect-ratio:16/9;background:#000}.t img{width:100%;height:100%;object-fit:cover;display:block}
- .m{padding:8px;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:40}
-  #shorts.on{display:block}
-  #shorts iframe{width:100%;height:100%;border:0}
-  #tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:#111;padding:6px 12px;border-radius:24px;z-index:20}
- .tab{padding:6px 12px;color:#aaa;font-size:13px}.tab.on{color:#fff;background:#333}
+  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+  button{width:80%;max-width:320px;padding:18px;font-size:18px;border-radius:14px;border:0;background:#ff0000;color:#fff;font-weight:600}
+  .hint{color:#888;font-size:13px;text-align:center;padding:0 20px}
 </style>
 </head>
 <body>
-<div id="top"><input id="search" type="search" inputmode="search" placeholder="Search" enterkeyhint="search"></div>
-<div id="feed"></div>
-<div id="shorts"></div>
-<div id="tabs"><div class="tab on" data-a="home">Home</div><div class="tab" data-a="shorts">Shorts</div></div>
+  <button id="home">Open YouTube Home</button>
+  <button id="shorts">Open Shorts</button>
+  <div class="hint">Say "home" or "shorts" • D-pad scrolls normally</div>
 
 <script>
-// Ray-Ban
+// Ray-Ban voice + tap
 if(window.RayBanDisplay){
-  const rb=new RayBanDisplay({cursor:true,gesture:true,voice:true,haptic:true});
-  rb.on('tap',e=>{const el=document.elementFromPoint(e.x,e.y);if(el?.tagName==='INPUT')el.focus();else el?.click();rb.haptic(5)});
-  rb.on('swipe',d=>document.getElementById('feed').scrollBy({top:d==='up'?-250:250,behavior:'smooth'}));
+  const rb=new RayBanDisplay({voice:true,haptic:true});
+  rb.on('voice',t=>{
+    if(t.includes('home'))location.href='https://m.youtube.com/?ra=m';
+    if(t.includes('shorts'))location.href='https://m.youtube.com/shorts/8WylF542tR4?ra=m';
+  });
 }
+document.getElementById('home').onclick=()=>location.href='https://m.youtube.com/?ra=m';
+document.getElementById('shorts').onclick=()=>location.href='https://m.youtube.com/shorts/8WylF542tR4?ra=m';
 
-// YouTube API (your key pool)
-const K=['AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo','AIzaSyAOBBJC3VvRsAQC2R-nenGvO23x--9SzB0','AIzaSyCxt2XsA80s67LNRTpgg-fBYqqHn2YgWDI'];let ki=0;
-async function yt(u){const r=await fetch(u+'&key='+K[ki]);const j=await r.json();if(j.error){ki=(ki+1)%K.length;return yt(u)}return j}
+// auto-launch home after 1s (remove if you want the menu)
+setTimeout(()=>location.href='https://m.youtube.com/?ra=m',1000);
 
-const feed=document.getElementById('feed'),shorts=document.getElementById('shorts');
-async function home(){document.getElementById('top').style.display='flex';document.getElementById('tabs').style.display='flex';shorts.classList.remove('on');const d=await yt('https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=20&regionCode=US');feed.innerHTML='';d.items.forEach(v=>{const e=document.createElement('div');e.className='v';e.innerHTML=`<div class="t"><img src="${v.snippet.thumbnails.medium.url}"></div><div class="m">${v.snippet.title}</div>`;e.onclick=()=>window.open(`https://m.youtube.com/watch?v=${v.id}`,'_blank');feed.appendChild(e)})}
-function goShorts(){document.getElementById('top').style.display='none';document.getElementById('tabs').style.display='none';shorts.classList.add('on');shorts.innerHTML=`<iframe src="https://www.youtube.com/embed/8WylF542tR4?autoplay=1&mute=0&playsinline=1&loop=1&playlist=8WylF542tR4" allow="autoplay;fullscreen"></iframe>`}
-
-document.getElementById('search').onkeydown=e=>{if(e.key==='Enter'){location.href=`https://m.youtube.com/results?search_query=${encodeURIComponent(e.target.value)}`}};
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');t.dataset.a==='home'?home():goShorts()});
-
-home();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('/service-worker.js');
 </script>
 </body>
