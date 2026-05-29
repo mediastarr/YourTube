@@ -3,64 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#000">
 <meta name="ray-ban-display" content="true">
-<title>YouTube — Ray-Ban</title>
+<title>YouTube</title>
 <link rel="manifest" href="/manifest.json">
 <style>
-  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:Roboto,system-ui}
-  #yt{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
-  .ui{position:fixed;left:50%;transform:translateX(-50%);z-index:20;transition:opacity .3s}
-  #tabs{bottom:8%;display:flex;gap:10px;background:rgba(15,15,15,.85);backdrop-filter:blur(12px);border:1px solid #272727;padding:8px 14px;border-radius:28px}
-  .tab{color:#aaa;font-size:13px;padding:6px 12px;border-radius:18px}
-  .tab.active{color:#fff;background:#272727}
-  .rb-cursor{position:fixed;width:26px;height:26px;border:2px solid #3ea6ff;border-radius:50%;pointer-events:none;z-index:9999;display:none;box-shadow:0 0 8px #3ea6ff}
-  .hidden{opacity:0;pointer-events:none}
+  html,body{margin:0;height:100%;background:#0f0f0f;color:#fff;font-family:Roboto,system-ui;overflow:hidden}
+  #top{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;display:flex;gap:8px;z-index:30}
+  #search{flex:1;background:#121212;border:1px solid #333;border-radius:20px;padding:10px 14px;color:#fff;font-size:15px;outline:none}
+  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ .v{background:#181818;border-radius:12px;overflow:hidden}
+ .t{aspect-ratio:16/9;background:#000}.t img{width:100%;height:100%;object-fit:cover;display:block}
+ .m{padding:8px;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:40}
+  #shorts.on{display:block}
+  #shorts iframe{width:100%;height:100%;border:0}
+  #tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:#111;padding:6px 12px;border-radius:24px;z-index:20}
+ .tab{padding:6px 12px;color:#aaa;font-size:13px}.tab.on{color:#fff;background:#333}
 </style>
 </head>
 <body>
-<div class="rb-cursor" id="cur"></div>
-<iframe id="yt" src="https://m.youtube.com/?ra=m" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" referrerpolicy="origin" loading="eager"></iframe>
-
-<div class="ui" id="tabs">
-  <div class="tab active" data-go="home">Home</div>
-  <div class="tab" data-go="shorts">Shorts</div>
-</div>
+<div id="top"><input id="search" type="search" inputmode="search" placeholder="Search" enterkeyhint="search"></div>
+<div id="feed"></div>
+<div id="shorts"></div>
+<div id="tabs"><div class="tab on" data-a="home">Home</div><div class="tab" data-a="shorts">Shorts</div></div>
 
 <script>
-// --- Ray-Ban Meta Glasses ---
-let rb=null;
+// Ray-Ban
 if(window.RayBanDisplay){
-  rb=new RayBanDisplay({cursor:true,gesture:true,voice:true,haptic:true});
-  const cur=document.getElementById('cur');cur.style.display='block';
-  rb.on('move',(x,y)=>{cur.style.left=x+'px';cur.style.top=y+'px'});
-  rb.on('tap',e=>{document.getElementById('yt').focus();rb.haptic(6)});
-  rb.on('swipe',d=>{ /* let YouTube handle native scroll */ });
-  rb.on('voice',t=>{if(t.includes('home'))goHome();if(t.includes('shorts'))goShorts()});
+  const rb=new RayBanDisplay({cursor:true,gesture:true,voice:true,haptic:true});
+  rb.on('tap',e=>{const el=document.elementFromPoint(e.x,e.y);if(el?.tagName==='INPUT')el.focus();else el?.click();rb.haptic(5)});
+  rb.on('swipe',d=>document.getElementById('feed').scrollBy({top:d==='up'?-250:250,behavior:'smooth'}));
 }
 
-const yt=document.getElementById('yt');
-const tabs=document.getElementById('tabs');
+// YouTube API (your key pool)
+const K=['AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo','AIzaSyAOBBJC3VvRsAQC2R-nenGvO23x--9SzB0','AIzaSyCxt2XsA80s67LNRTpgg-fBYqqHn2YgWDI'];let ki=0;
+async function yt(u){const r=await fetch(u+'&key='+K[ki]);const j=await r.json();if(j.error){ki=(ki+1)%K.length;return yt(u)}return j}
 
-function goHome(){
-  yt.src='https://m.youtube.com/?ra=m';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.go==='home'));
-  tabs.classList.remove('hidden');
-}
-function goShorts(){
-  yt.src='https://m.youtube.com/shorts/8WylF542tR4?ra=m';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.go==='shorts'));
-  // auto-hide UI for immersive Shorts after 2s
-  setTimeout(()=>tabs.classList.add('hidden'),2000);
-}
+const feed=document.getElementById('feed'),shorts=document.getElementById('shorts');
+async function home(){document.getElementById('top').style.display='flex';document.getElementById('tabs').style.display='flex';shorts.classList.remove('on');const d=await yt('https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=20&regionCode=US');feed.innerHTML='';d.items.forEach(v=>{const e=document.createElement('div');e.className='v';e.innerHTML=`<div class="t"><img src="${v.snippet.thumbnails.medium.url}"></div><div class="m">${v.snippet.title}</div>`;e.onclick=()=>window.open(`https://m.youtube.com/watch?v=${v.id}`,'_blank');feed.appendChild(e)})}
+function goShorts(){document.getElementById('top').style.display='none';document.getElementById('tabs').style.display='none';shorts.classList.add('on');shorts.innerHTML=`<iframe src="https://www.youtube.com/embed/8WylF542tR4?autoplay=1&mute=0&playsinline=1&loop=1&playlist=8WylF542tR4" allow="autoplay;fullscreen"></iframe>`}
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>b.dataset.go==='home'?goHome():goShorts());
+document.getElementById('search').onkeydown=e=>{if(e.key==='Enter'){location.href=`https://m.youtube.com/results?search_query=${encodeURIComponent(e.target.value)}`}};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');t.dataset.a==='home'?home():goShorts()});
 
-// tap anywhere to show UI again in Shorts
-document.addEventListener('click',()=>{if(tabs.classList.contains('hidden')){tabs.classList.remove('hidden');setTimeout(()=>tabs.classList.add('hidden'),3000)}});
-
-// PWA
-if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'))}
+home();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/service-worker.js');
 </script>
 </body>
 </html>
