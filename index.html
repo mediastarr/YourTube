@@ -3,103 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#000000">
 <meta name="ray-ban-display" content="true">
-<title>GlassTube for Ray-Ban</title>
+<title>YouTube — Ray-Ban</title>
 <link rel="manifest" href="/manifest.json">
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{background:#0f0f0f;margin:0;color:#fff;font-family:Roboto,system-ui;height:100%;overflow:hidden}
-.topbar{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;z-index:30;display:flex;gap:8px;background:#0f0f0f;border:1px solid #272727;border-radius:24px;padding:8px 12px}
-.logo{width:28px;height:28px;background:#f00;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.searchbox{flex:1;background:#121212;border:1px solid #303030;border-radius:16px;padding:10px 12px;color:#fff;font-size:15px;outline:none}
-  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start;padding-bottom:20px;-webkit-overflow-scrolling:touch}
-.vid{background:#181818;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.thumb{position:relative;width:100%;aspect-ratio:16/9;background:#000;flex-shrink:0}
-.thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.meta{padding:8px;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  #shortsFeed{position:fixed;inset:0;display:none;overflow-y:scroll;scroll-snap-type:y mandatory;background:#000;z-index:40}
-  #shortsFeed.active{display:block}
-.short{height:100vh;scroll-snap-align:start;position:relative}
-.short iframe{width:100%;height:100%;border:0}
-.mute{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;opacity:0;transition:.2s;pointer-events:none;text-shadow:0 2px 10px #000}
-.mute.show{opacity:.9}
-  #shortsBack{position:fixed;top:20px;left:20px;width:44px;height:44px;background:rgba(0,0,0,.7);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:24px;z-index:50}
-  #shortsBack.show{display:flex}
-.tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:#0f0f0f;border:1px solid #272727;border-radius:28px;padding:6px 10px;z-index:20}
-.tab{padding:6px 12px;border-radius:20px;font-size:12px;color:#aaa}
-.tab.active{background:#272727;color:#fff}
-.rb-cursor{position:fixed;width:28px;height:28px;border:2px solid #3ea6ff;border-radius:50%;pointer-events:none;z-index:999;display:none}
-  #player{position:fixed;inset:0;background:#000;z-index:100;display:none}
-  #player.show{display:block}
-  #player iframe{width:100%;height:100%;border:0}
-  #closeP{position:absolute;top:20px;right:20px;width:44px;height:44px;background:rgba(0,0,0,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:101}
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:Roboto,system-ui}
+  #yt{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+  .ui{position:fixed;left:50%;transform:translateX(-50%);z-index:20;transition:opacity .3s}
+  #tabs{bottom:8%;display:flex;gap:10px;background:rgba(15,15,15,.85);backdrop-filter:blur(12px);border:1px solid #272727;padding:8px 14px;border-radius:28px}
+  .tab{color:#aaa;font-size:13px;padding:6px 12px;border-radius:18px}
+  .tab.active{color:#fff;background:#272727}
+  .rb-cursor{position:fixed;width:26px;height:26px;border:2px solid #3ea6ff;border-radius:50%;pointer-events:none;z-index:9999;display:none;box-shadow:0 0 8px #3ea6ff}
+  .hidden{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
-<div class="rb-cursor" id="rbCursor"></div>
+<div class="rb-cursor" id="cur"></div>
+<iframe id="yt" src="https://m.youtube.com/?ra=m" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" referrerpolicy="origin" loading="eager"></iframe>
 
-<div class="topbar" id="topbar">
-  <div class="logo">▶</div>
-  <input id="search" class="searchbox" type="search" inputmode="search" placeholder="Search YouTube" enterkeyhint="search" autocomplete="off">
+<div class="ui" id="tabs">
+  <div class="tab active" data-go="home">Home</div>
+  <div class="tab" data-go="shorts">Shorts</div>
 </div>
-
-<div id="feed"></div>
-<div id="shortsFeed"></div>
-<div id="shortsBack">×</div>
-
-<div class="tabs" id="tabs">
-  <div class="tab active" data-t="home">Home</div>
-  <div class="tab" data-t="shorts">Shorts</div>
-  <div class="tab" data-t="subs">Subs</div>
-</div>
-
-<div id="player"><div id="closeP">×</div><div id="pWrap" style="height:100%"></div></div>
 
 <script>
-// --- Ray-Ban SDK ---
+// --- Ray-Ban Meta Glasses ---
 let rb=null;
 if(window.RayBanDisplay){
   rb=new RayBanDisplay({cursor:true,gesture:true,voice:true,haptic:true});
-  const cur=document.getElementById('rbCursor');cur.style.display='block';
+  const cur=document.getElementById('cur');cur.style.display='block';
   rb.on('move',(x,y)=>{cur.style.left=x+'px';cur.style.top=y+'px'});
-  rb.on('tap',e=>{const el=document.elementFromPoint(e.x,e.y);if(!el)return;if(el.tagName==='INPUT'){el.focus()}else{el.click()}rb.haptic(8)});
-  rb.on('swipe',d=>{const s=shortsFeed.classList.contains('active');(s?shortsFeed:feed).scrollBy({top:d==='up'?-300:300,behavior:'smooth'});rb.haptic(5)});
-  rb.on('voice',t=>{if(t.includes('search'))search.focus();if(t.includes('home'))loadHome();if(t.includes('shorts'))loadShorts()});
+  rb.on('tap',e=>{document.getElementById('yt').focus();rb.haptic(6)});
+  rb.on('swipe',d=>{ /* let YouTube handle native scroll */ });
+  rb.on('voice',t=>{if(t.includes('home'))goHome();if(t.includes('shorts'))goShorts()});
 }
 
-// --- YouTube ---
-const KEYS=['AIzaSyCpw2u0mG3cYbH3PwAdjB7MOZB-1kdeRjo','AIzaSyAOBBJC3VvRsAQC2R-nenGvO23x--9SzB0','AIzaSyCxt2XsA80s67LNRTpgg-fBYqqHn2YgWDI','AIzaSyDHjpWZX7J9-39VM9Urb8LM102nr1H91GY','AIzaSyAivKVAqJkYqAkzX3lV1f8FiFlU-EchNYI','AIzaSyBFVv1THj4Q0jJvNJv9jfyUnYz8NG4eWRk','AIzaSyD4A2061bz3jVUjFg3Z8jsbgjiF7ii32h4','AIzaSyA1AKHRCe7aq8Bv4j6KqXTjmg9hS1Fc9ho'];
-let ki=parseInt(localStorage.ytk||0);
-async function yt(u){const r=await fetch(u+(u.includes('?')?'&':'?')+'key='+KEYS[ki]);const d=await r.json();if(d.error){ki=(ki+1)%KEYS.length;localStorage.ytk=ki;return yt(u)}return d}
+const yt=document.getElementById('yt');
+const tabs=document.getElementById('tabs');
 
-const feed=document.getElementById('feed'),shortsFeed=document.getElementById('shortsFeed'),search=document.getElementById('search'),topbar=document.getElementById('topbar'),tabs=document.getElementById('tabs');
-search.onkeydown=e=>{if(e.key==='Enter'){doSearch(search.value);search.blur()}};
-
-function showUI(v){topbar.style.display=v?'flex':'none';tabs.style.display=v?'flex':'none'}
-
-async function loadHome(){
-  showUI(true);shortsFeed.classList.remove('active');document.getElementById('shortsBack').classList.remove('show');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='home'));
-  feed.innerHTML='';const d=await yt('https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=20&regionCode=US');
-  d.items.forEach(v=>{const el=document.createElement('div');el.className='vid';el.innerHTML=`<div class="thumb"><img src="${v.snippet.thumbnails.medium.url}" loading="lazy"></div><div class="meta">${v.snippet.title}</div>`;el.onclick=()=>openPlayer(v.id);feed.appendChild(el)});
+function goHome(){
+  yt.src='https://m.youtube.com/?ra=m';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.go==='home'));
+  tabs.classList.remove('hidden');
 }
-async function doSearch(q){const d=await yt(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(q)}`);feed.innerHTML='';d.items.forEach(v=>{const el=document.createElement('div');el.className='vid';el.innerHTML=`<div class="thumb"><img src="${v.snippet.thumbnails.medium.url}"></div><div class="meta">${v.snippet.title}</div>`;el.onclick=()=>openPlayer(v.id.videoId);feed.appendChild(el)})}
-async function loadShorts(){
-  showUI(false);shortsFeed.classList.add('active');document.getElementById('shortsBack').classList.add('show');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='shorts'));
-  const d=await yt('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=10&q=%23shorts');
-  shortsFeed.innerHTML='';d.items.forEach(v=>{const s=document.createElement('div');s.className='short';s.innerHTML=`<iframe src="https://www.youtube.com/embed/${v.id.videoId}?autoplay=1&mute=0&playsinline=1&enablejsapi=1&loop=1&playlist=${v.id.videoId}" allow="autoplay"></iframe><div class="mute">🔊</div>`;const m=s.querySelector('.mute');m.classList.add('show');setTimeout(()=>m.classList.remove('show'),1000);s.onclick=()=>{const f=s.querySelector('iframe'),muted=f.src.includes('mute=1');f.src=f.src.replace(muted?'mute=1':'mute=0',muted?'mute=0':'mute=1');m.textContent=muted?'🔊':'🔇';m.classList.add('show');setTimeout(()=>m.classList.remove('show'),800);if(rb)rb.haptic(10)};shortsFeed.appendChild(s)});
+function goShorts(){
+  yt.src='https://m.youtube.com/shorts/8WylF542tR4?ra=m';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.go==='shorts'));
+  // auto-hide UI for immersive Shorts after 2s
+  setTimeout(()=>tabs.classList.add('hidden'),2000);
 }
-function openPlayer(id){document.getElementById('player').classList.add('show');document.getElementById('pWrap').innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`}
-function closePlayer(){document.getElementById('player').classList.remove('show');document.getElementById('pWrap').innerHTML=''}
-document.getElementById('closeP').onclick=closePlayer;
-document.getElementById('shortsBack').onclick=loadHome;
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>t.dataset.t==='home'?loadHome():loadShorts());
 
-loadHome();
-if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'))}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>b.dataset.go==='home'?goHome():goShorts());
+
+// tap anywhere to show UI again in Shorts
+document.addEventListener('click',()=>{if(tabs.classList.contains('hidden')){tabs.classList.remove('hidden');setTimeout(()=>tabs.classList.add('hidden'),3000)}});
+
+// PWA
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js'))}
 </script>
 </body>
 </html>
