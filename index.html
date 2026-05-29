@@ -3,113 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#000">
 <meta name="ray-ban-display" content="true">
-<title>YouTube</title>
+<title>YouTube Shorts</title>
 <link rel="manifest" href="/manifest.json">
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;background:#0f0f0f;color:#fff;font-family:Roboto,system-ui;overflow:hidden}
-  #top{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;display:flex;gap:8px;z-index:30}
-  #search{flex:1;background:#121212;border:1px solid #333;border-radius:24px;padding:12px 16px;color:#fff;font-size:15px;outline:none}
-  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;max-width:820px;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:20px}
-  .v{background:#181818;border-radius:12px;overflow:hidden}
-  .t{aspect-ratio:16/9;background:#000}.t img{width:100%;height:100%;object-fit:cover;display:block}
-  .m{padding:8px;font-size:13px}
-  /* SHORTS - clean, no controls */
-  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:50;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#000;color:#fff;font-family:system-ui;overflow:hidden}
+  #top{position:fixed;top:12%;left:50%;transform:translateX(-50%);width:88%;z-index:10}
+  #search{width:100%;padding:12px 16px;background:#111;border:1px solid #333;border-radius:24px;color:#fff;font-size:15px;outline:none}
+  #feed{position:fixed;top:22%;left:50%;transform:translateX(-50%);width:88%;height:58vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .v{background:#181818;border-radius:10px;overflow:hidden}.v img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+  /* SHORTS - Reels style */
+  #shorts{position:fixed;inset:0;background:#000;display:none;z-index:20}
   #shorts.on{display:block}
-  .s-item{width:100%;height:100vh;scroll-snap-align:start;position:relative;background:#000}
-  .s-item iframe{width:100%;height:100%;border:0;pointer-events:none} /* blocks YouTube UI */
-  .s-overlay{position:absolute;inset:0;z-index:2} /* captures tap */
-  #tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:12px;background:#111;padding:8px 16px;border-radius:28px;z-index:30;border:1px solid #272727}
-  .tb{padding:6px 14px;color:#aaa;font-size:13px;border-radius:18px}.tb.on{color:#fff;background:#333}
-  .back{position:fixed;top:20px;left:20px;width:40px;height:40px;background:rgba(0,0,0,.7);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:60;font-size:22px}
-  .back.on{display:flex}
+  #player-wrap{position:absolute;inset:0}
+  #player-wrap iframe{width:100%;height:100%;border:0;pointer-events:none}
+  #overlay{position:absolute;inset:0;z-index:5} /* captures tap, blocks YT UI */
+  #next-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:#fff8;font-size:12px;z-index:6;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  #tabs{position:fixed;bottom:8%;left:50%;transform:translateX(-50%);display:flex;gap:10px;background:#111;padding:6px 14px;border-radius:24px;z-index:30;border:1px solid #222}
+ .tb{padding:6px 12px;color:#888;font-size:13px}.tb.on{color:#fff;background:#333;border-radius:16px}
 </style>
 </head>
 <body>
-<div id="top"><input id="search" type="search" inputmode="search" placeholder="Search YouTube" enterkeyhint="search"></div>
+<div id="top"><input id="search" type="search" placeholder="Search"></div>
 <div id="feed"></div>
-<div id="shorts"></div>
-<div class="back" id="back">×</div>
+
+<div id="shorts">
+  <div id="player-wrap"><div id="yt-player"></div></div>
+  <div id="overlay"></div>
+  <div id="next-hint">swipe down for next</div>
+</div>
+
 <div id="tabs"><div class="tb on" data-t="h">Home</div><div class="tb" data-t="s">Shorts</div></div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const HOME_VIDS=[
-  {id:'dQw4w9WgXcQ',t:'Never Gonna Give You Up'},
-  {id:'9bZkp7q19f0',t:'GANGNAM STYLE'},
-  {id:'kJQP7kiw5Fk',t:'Despacito'}
-];
-// STARTS ON YOUR VIDEO
-const SHORTS=['KRJeVXQEoow','ckzUY_Dxp_g','8WylF542tR4','i5q7w0A4gHY','x5-KB5Kx8F4','d0T2gK5WPMU'];
+// START WITH YOUR VIDEO
+const SHORTS = ['tuKGo7FS6uU','KRJeVXQEoow','ckzUY_Dxp_g','8WylF542tR4','i5q7w0A4gHY','x5-KB5Kx8F4'];
+let cur=0, player, unmuted=false;
 
-const feed=document.getElementById('feed'),shorts=document.getElementById('shorts'),back=document.getElementById('back');
+function onYouTubeIframeAPIReady(){
+  player = new YT.Player('yt-player',{
+    videoId: SHORTS[0],
+    playerVars:{
+      controls:0,modestbranding:1,rel:0,playsinline:1,
+      autoplay:1,mute:1,iv_load_policy:3,fs:0,disablekb:1,
+      origin:location.origin
+    },
+    events:{onReady:e=>e.target.playVideo()}
+  });
+}
+
+function nextShort(){
+  cur=(cur+1)%SHORTS.length;
+  player.loadVideoById({videoId:SHORTS[cur],startSeconds:0});
+  if(unmuted) player.unMute();
+}
+function prevShort(){
+  cur=(cur-1+SHORTS.length)%SHORTS.length;
+  player.loadVideoById({videoId:SHORTS[cur],startSeconds:0});
+  if(unmuted) player.unMute();
+}
+
+// tap = unmute (no YT UI shows)
+document.getElementById('overlay').onclick=()=>{
+  if(!unmuted){player.unMute();unmuted=true;document.getElementById('next-hint').style.display='none'}
+};
+
+// swipe detection
+let sy=0;
+const shortsEl=document.getElementById('shorts');
+shortsEl.addEventListener('touchstart',e=>sy=e.touches[0].clientY);
+shortsEl.addEventListener('touchend',e=>{const dy=e.changedTouches[0].clientY-sy;if(Math.abs(dy)>50)dy<0?nextShort():prevShort()});
 
 // Ray-Ban
 if(window.RayBanDisplay){
-  const rb=new RayBanDisplay({cursor:true,gesture:true});
-  rb.on('tap',e=>{const el=document.elementFromPoint(e.x,e.y);if(el?.id==='search')el.focus();else el?.click()});
-  rb.on('swipe',d=>{
-    if(shorts.classList.contains('on')){
-      shorts.scrollBy({top:d==='up'?-innerHeight:innerHeight,behavior:'smooth'});
-    }else{
-      feed.scrollBy({top:d==='up'?-250:250,behavior:'smooth'});
-    }
-  });
+  const rb=new RayBanDisplay({gesture:true});
+  rb.on('swipe',d=>d==='up'?prevShort():nextShort());
+  rb.on('tap',()=>document.getElementById('overlay').click());
 }
 
-function showHome(){
-  document.getElementById('top').style.display='flex';
-  document.getElementById('tabs').style.display='flex';
-  shorts.classList.remove('on');back.classList.remove('on');
-  feed.innerHTML=HOME_VIDS.map(v=>`
-    <div class="v" onclick="window.open('https://m.youtube.com/watch?v=${v.id}','_blank')">
-      <div class="t"><img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"></div>
-      <div class="m">${v.t}</div>
-    </div>`).join('');
-}
+// tabs
+function showHome(){document.getElementById('top').style.display='block';document.getElementById('feed').style.display='grid';shorts.classList.remove('on')}
+function showShorts(){document.getElementById('top').style.display='none';document.getElementById('feed').style.display='none';shorts.classList.add('on');player.playVideo()}
 
-function showShorts(){
-  document.getElementById('top').style.display='none';
-  document.getElementById('tabs').style.display='none';
-  shorts.classList.add('on');back.classList.add('on');
-  
-  // build clean Shorts feed - NO controls
-  shorts.innerHTML = SHORTS.map(id=>`
-    <div class="s-item" data-id="${id}">
-      <iframe src="https://www.youtube.com/embed/${id}?controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&autoplay=0&mute=1&loop=1&playlist=${id}&iv_load_policy=3&fs=0&disablekb=1" allow="autoplay"></iframe>
-      <div class="s-overlay"></div>
-    </div>`).join('');
+document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  b.dataset.t==='h'?showHome():showShorts();
+});
 
-  // auto-play current, pause others + tap to unmute
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(en=>{
-      const f=en.target.querySelector('iframe');
-      if(!f)return;
-      if(en.isIntersecting){
-        f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}','*');
-      }else{
-        f.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');
-      }
-    });
-  },{threshold:0.8});
-  
-  shorts.querySelectorAll('.s-item').forEach(el=>{
-    obs.observe(el);
-    el.querySelector('.s-overlay').onclick=()=>{
-      const f=el.querySelector('iframe');
-      // toggle mute on tap
-      f.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}','*');
-    };
-  });
-}
+// simple home
+document.getElementById('feed').innerHTML=['dQw4w9WgXcQ','9bZkp7q19f0','kJQP7kiw5Fk'].map(id=>`
+  <div class="v" onclick="window.open('https://m.youtube.com/watch?v=${id}')"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg"></div>`).join('');
 
 document.getElementById('search').onkeydown=e=>{if(e.key==='Enter')location.href=`https://m.youtube.com/results?search_query=${encodeURIComponent(e.target.value)}`};
-document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));b.classList.add('on');b.dataset.t==='h'?showHome():showShorts()});
-back.onclick=showHome;
-
-showHome();
 </script>
 </body>
 </html>
